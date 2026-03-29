@@ -24,7 +24,7 @@ jobs:
         run: npm install
 
       - name: Type check
-        run: npx tsc --noEmit
+        run: npx tsc --noEmit -p tsconfig.build.json
 
       - name: Run ESLint
         run: npm run lint
