@@ -21,7 +21,7 @@ export class AuthService {
     return {
       succeeded: true,
       data: tokens,
-      message: 'Login realizado con sucesso',
+      message: 'Login realizado com sucesso.',
     };
   }
 
