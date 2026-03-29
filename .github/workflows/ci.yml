@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - developer
-
+      - preview
 jobs:
   quality:
     runs-on: ubuntu-latest
