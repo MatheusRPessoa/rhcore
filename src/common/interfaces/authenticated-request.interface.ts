@@ -1,6 +1,6 @@
 export interface AuthenticatedRequest extends Request {
   user: {
-    sub: number;
+    sub: string;
     username: string;
     refreshToken?: string;
   };
