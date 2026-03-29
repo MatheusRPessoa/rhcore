@@ -24,6 +24,7 @@ export class User extends BaseEntity {
 
   @Column({
     name: 'REFRESH_TOKEN',
+    type: 'varchar',
     length: 500,
     nullable: true,
   })

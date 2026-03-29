@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { BaseEntity } from 'src/common/entities/base.entity';
 import { RequestTypeEnum } from '../enums/request-type.enum';
 import { Employee } from 'src/employees/entities/employee.entity';
 
