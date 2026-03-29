@@ -5,10 +5,26 @@ on:
     branches:
       - main
       - developer
+      - preview
 
 jobs:
   quality:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: rhcore_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout repository
@@ -23,8 +39,25 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Create .env file
+        run: |
+          cat > .env << 'EOF'
+          NODE_ENV=test
+          PORT=3000
+          DB_HOST=localhost
+          DB_PORT=5432
+          DB_USER=postgres
+          DB_PASSWORD=postgres
+          DB_NAME=rhcore_db
+          JWT_SECRET=ci-jwt-secret
+          JWT_REFRESH_SECRET=ci-jwt-refresh-secret
+          EOF
+
+      - name: Enable uuid-ossp extension
+        run: psql postgresql://postgres:postgres@localhost:5432/rhcore_db -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
+
       - name: Type check
-        run: npx tsc --noEmit
+        run: npx tsc --noEmit -p tsconfig.build.json
 
       - name: Run ESLint
         run: npm run lint
@@ -32,8 +65,25 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+      - name: Run migrations
+        run: npm run migration:run
+
+      - name: Start server
+        run: npm start &
+
+      - name: Wait for server
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:3000/api/docs > /dev/null 2>&1; then
+              echo "Server ready"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+
       - name: Run tests
-        run: npm run test -- --coverage
+        run: npm run test -- --coverage --runInBand
 
       - name: Build project
         run: npm run build
