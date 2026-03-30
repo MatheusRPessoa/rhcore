@@ -14,15 +14,15 @@
     "start:dev": "nest start --watch",
     "dev": "nest start --watch",
     "migration:create": "typeorm migration:create src/config/database/migrations/Migration",
-    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/config/database/data-source.ts",
-    "migration:revert": "typeorm migration:revert -d src/config/database/data-source.ts",
+    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/config/database/data-source.ts",
+    "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d src/config/database/data-source.ts",
     "migration:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate src/config/database/migrations/Migration -d src/config/database/data-source.ts",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "fix": "npm run format && npm run lint:fix",
-    "test": "jest",
+    "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -93,13 +93,21 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "tsconfig": "tsconfig.test.json"
+        }
+      ]
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    }
   },
   "config": {
     "commitizen": {

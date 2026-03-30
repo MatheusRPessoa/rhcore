@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -8,6 +9,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async login(username: string, password: string) {
@@ -21,7 +23,7 @@ export class AuthService {
     return {
       succeeded: true,
       data: tokens,
-      message: 'Login realizado con sucesso',
+      message: 'Login realizado com sucesso.',
     };
   }
 
@@ -57,7 +59,7 @@ export class AuthService {
       this.jwtService.signAsync(payload, { expiresIn: '1d' }),
       this.jwtService.signAsync(payload, {
         expiresIn: '7d',
-        secret: process.env.JWT_REFRESH_SECRET,
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
       }),
     ]);
     return { access_token, refresh_token };

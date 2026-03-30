@@ -1,6 +1,7 @@
 import { Department } from 'src/departments/entities/department.entity';
 import { Position } from 'src/positions/entities/position.entity';
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 @Entity('FUNCIONARIOS')
 export class Employee extends BaseEntity {

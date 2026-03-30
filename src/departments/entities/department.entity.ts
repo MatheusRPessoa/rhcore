@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 @Entity('DEPARTAMENTOS')
 export class Department extends BaseEntity {
