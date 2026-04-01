@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - main
-      - developer
       - preview
 
 jobs:
@@ -37,21 +36,21 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Create .env file
         run: |
-          cat > .env << 'EOF'
-          NODE_ENV=test
-          PORT=3000
-          DB_HOST=localhost
-          DB_PORT=5432
-          DB_USER=postgres
-          DB_PASSWORD=postgres
-          DB_NAME=rhcore_db
-          JWT_SECRET=ci-jwt-secret
-          JWT_REFRESH_SECRET=ci-jwt-refresh-secret
-          EOF
+          printf '%s\n' \
+            'NODE_ENV=test' \
+            'PORT=3000' \
+            'DB_HOST=localhost' \
+            'DB_PORT=5432' \
+            'DB_USER=postgres' \
+            'DB_PASSWORD=postgres' \
+            'DB_NAME=rhcore_db' \
+            'JWT_SECRET=ci-jwt-secret' \
+            'JWT_REFRESH_SECRET=ci-jwt-refresh-secret' \
+            > .env
 
       - name: Enable uuid-ossp extension
         run: psql postgresql://postgres:postgres@localhost:5432/rhcore_db -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'

@@ -18,7 +18,7 @@ import { RequestsModule } from './requests/requests.module';
     ConfigModule.forRoot({ isGlobal: true }),
 
     LoggerModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, PositionsModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const isDevelopment = configService.get('NODE_ENV') !== 'production';
