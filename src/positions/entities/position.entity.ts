@@ -33,6 +33,7 @@ export class Position extends BaseEntity {
     type: 'decimal',
     precision: 10,
     scale: 2,
+    nullable: true,
   })
   SALARIO_BASE: number | null;
 
