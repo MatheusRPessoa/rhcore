@@ -13,6 +13,8 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "dev": "nest start --watch",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
     "migration:create": "typeorm migration:create src/config/database/migrations/Migration",
     "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/config/database/data-source.ts",
     "migration:run:prod": "typeorm migration:run -d dist/config/database/data-source.js",
