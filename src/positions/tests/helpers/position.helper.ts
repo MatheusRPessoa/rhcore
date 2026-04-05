@@ -1,5 +1,5 @@
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
-import { ApiResponse } from 'src/tests/helpers/api-response.helper';
+import { ApiResponse } from 'src/common/tests/helpers/api-response.helper';
 import { DataSource, Position } from 'typeorm';
 
 const BASE_URL = 'http://localhost:3000';

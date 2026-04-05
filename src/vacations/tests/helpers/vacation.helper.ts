@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
-import { ApiResponse } from 'src/tests/helpers/api-response.helper';
+import { ApiResponse } from 'src/common/tests/helpers/api-response.helper';
 import { VacationStatusEnum } from 'src/vacations/enums/vacation-status.enum';
 import { DataSource } from 'typeorm';
 

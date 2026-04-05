@@ -1,7 +1,7 @@
 import { AuthHelper } from '../../../auth/tests/helpers/auth.helper';
 import { User } from '../../../users/entities/user.entity';
 import { DataSource } from 'typeorm';
-import type { ApiResponse } from '../../../tests/helpers/api-response.helper';
+import type { ApiResponse } from '../../../common/tests/helpers/api-response.helper';
 
 const BASE_URL = 'http://localhost:3000';
 const USERS_ENDPOINT = '/users';
