@@ -1,0 +1,6 @@
+export enum VacationStatusEnum {
+  PENDENTE = 'PENDENTE',
+  APROVADO = 'APROVADO',
+  REJEITADO = 'REJEITADO',
+  CANCELADO = 'CANCELADO',
+}
