@@ -5,6 +5,10 @@ import { Employee } from 'src/employees/entities/employee.entity';
 
 @Entity('SOLICITACOES')
 export class Request extends BaseEntity {
+  @ManyToOne(() => Employee)
+  @JoinColumn({ name: 'FUNCIONARIO_ID' })
+  FUNCIONARIO: Employee;
+
   @Column({
     name: 'TIPO',
     type: 'varchar',
