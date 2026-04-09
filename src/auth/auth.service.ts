@@ -53,6 +53,11 @@ export class AuthService {
     };
   }
 
+  async me(userId: string) {
+    const user = await this.usersService.findForAuth(userId);
+    return { succeeded: true, data: user, message: 'Usuário autenticado' };
+  }
+
   private async generateTokens(userId: string, username: string) {
     const payload = { username, sub: userId };
     const [access_token, refresh_token] = await Promise.all([

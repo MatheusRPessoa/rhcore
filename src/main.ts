@@ -96,6 +96,13 @@ async function bootstrap() {
     customSiteTitle: 'RHCore API Docs',
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  app.enableCors({
+    origin: ['http://localhost:3000'], // porta do frontend Next.js
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
+
+  await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();

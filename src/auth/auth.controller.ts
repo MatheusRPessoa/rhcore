@@ -72,4 +72,11 @@ export class AuthController {
   async logout(@Req() req: AuthenticatedRequest) {
     return this.authService.logout(req.user.sub);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiBearerAuth('JWT-auth')
+  async me(@Req() req: AuthenticatedRequest) {
+    return this.authService.me(req.user.sub);
+  }
 }
