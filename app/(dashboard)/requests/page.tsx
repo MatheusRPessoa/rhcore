@@ -55,7 +55,7 @@ export default function RequestsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateRequestData }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateRequestData }) =>
       requestsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["requests"] });
@@ -69,7 +69,7 @@ export default function RequestsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => requestsApi.delete(id),
+    mutationFn: (id: string) => requestsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["requests"] });
       setIsDeleteOpen(false);

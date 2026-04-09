@@ -55,7 +55,7 @@ export default function PositionsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdatePositionData }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdatePositionData }) =>
       positionsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["positions"] });
@@ -69,7 +69,7 @@ export default function PositionsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => positionsApi.delete(id),
+    mutationFn: (id: string) => positionsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["positions"] });
       setIsDeleteOpen(false);

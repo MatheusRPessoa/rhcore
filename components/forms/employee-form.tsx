@@ -136,11 +136,9 @@ export function EmployeeForm({
       EMAIL: data.EMAIL,
       TELEFONE: data.TELEFONE || undefined,
       DATA_ADMISSAO: data.DATA_ADMISSAO,
-      DEPARTAMENTO_ID: data.DEPARTAMENTO_ID
-        ? Number(data.DEPARTAMENTO_ID)
-        : undefined,
-      CARGO_ID: data.CARGO_ID ? Number(data.CARGO_ID) : undefined,
-      GESTOR_ID: data.GESTOR_ID ? Number(data.GESTOR_ID) : undefined,
+      DEPARTAMENTO_ID: data.DEPARTAMENTO_ID || undefined,
+      CARGO_ID: data.CARGO_ID || undefined,
+      GESTOR_ID: data.GESTOR_ID || undefined,
     };
 
     if (employee && data.STATUS) {

@@ -54,7 +54,7 @@ export default function DepartmentsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateDepartmentData }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateDepartmentData }) =>
       departmentsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
@@ -68,7 +68,7 @@ export default function DepartmentsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => departmentsApi.delete(id),
+    mutationFn: (id: string) => departmentsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
       setIsDeleteOpen(false);

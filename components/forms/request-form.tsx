@@ -106,7 +106,7 @@ export function RequestForm({
 
   const handleFormSubmit = async (data: RequestFormData) => {
     const payload: CreateRequestData | UpdateRequestData = {
-      FUNCIONARIO_ID: Number(data.FUNCIONARIO_ID),
+      FUNCIONARIO_ID: data.FUNCIONARIO_ID,
       TIPO: data.TIPO as RequestType,
       DESCRICAO: data.DESCRICAO,
       DATA_SOLICITACAO: data.DATA_SOLICITACAO,
@@ -119,7 +119,7 @@ export function RequestForm({
         updatePayload.DATA_RESPOSTA = data.DATA_RESPOSTA;
       }
       if (data.APROVADO_POR_ID) {
-        updatePayload.APROVADO_POR_ID = Number(data.APROVADO_POR_ID);
+        updatePayload.APROVADO_POR_ID = data.APROVADO_POR_ID;
       }
     }
 

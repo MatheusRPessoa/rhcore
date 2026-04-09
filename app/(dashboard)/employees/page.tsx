@@ -57,7 +57,7 @@ export default function EmployeesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateEmployeeData }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateEmployeeData }) =>
       employeesApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
@@ -71,7 +71,7 @@ export default function EmployeesPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => employeesApi.delete(id),
+    mutationFn: (id: string) => employeesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       setIsDeleteOpen(false);

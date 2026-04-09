@@ -55,7 +55,7 @@ export default function VacationsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateVacationData }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateVacationData }) =>
       vacationsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vacations"] });
@@ -69,7 +69,7 @@ export default function VacationsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => vacationsApi.delete(id),
+    mutationFn: (id: string) => vacationsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vacations"] });
       setIsDeleteOpen(false);

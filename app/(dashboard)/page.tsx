@@ -266,7 +266,7 @@ export default function DashboardPage() {
       type: "employee" as const,
       title: e.NOME,
       description: `Funcionário ${e.STATUS === "ATIVO" ? "ativo" : "inativo"}`,
-      timestamp: new Date(e.CREATED_AT).toLocaleDateString("pt-BR"),
+      timestamp: new Date(e.CRIADO_EM).toLocaleDateString("pt-BR"),
       status: e.STATUS,
     })),
     ...vacations.slice(0, 2).map((v, i) => ({
@@ -274,7 +274,7 @@ export default function DashboardPage() {
       type: "vacation" as const,
       title: v.FUNCIONARIO?.NOME || "Funcionário",
       description: `Férias de ${new Date(v.DATA_INICIO).toLocaleDateString("pt-BR")} a ${new Date(v.DATA_FIM).toLocaleDateString("pt-BR")}`,
-      timestamp: new Date(v.CREATED_AT).toLocaleDateString("pt-BR"),
+      timestamp: new Date(v.CRIADO_EM).toLocaleDateString("pt-BR"),
       status: v.STATUS_FERIAS,
     })),
   ]

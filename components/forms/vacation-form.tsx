@@ -89,7 +89,7 @@ export function VacationForm({
 
   const handleFormSubmit = async (data: VacationFormData) => {
     const payload: CreateVacationData | UpdateVacationData = {
-      FUNCIONARIO_ID: Number(data.FUNCIONARIO_ID),
+      FUNCIONARIO_ID: data.FUNCIONARIO_ID,
       DATA_INICIO: data.DATA_INICIO,
       DATA_FIM: data.DATA_FIM,
       OBSERVACAO: data.OBSERVACAO || undefined,
@@ -99,7 +99,7 @@ export function VacationForm({
       const updatePayload = payload as UpdateVacationData;
       updatePayload.STATUS_FERIAS = data.STATUS_FERIAS as VacationStatus;
       if (data.APROVADO_POR_ID) {
-        updatePayload.APROVADO_POR_ID = Number(data.APROVADO_POR_ID);
+        updatePayload.APROVADO_POR_ID = data.APROVADO_POR_ID;
       }
       if (data.DATA_APROVACAO) {
         updatePayload.DATA_APROVACAO = data.DATA_APROVACAO;

@@ -47,7 +47,7 @@ export default function UsersPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateUserData }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateUserData }) =>
       usersApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -61,7 +61,7 @@ export default function UsersPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => usersApi.delete(id),
+    mutationFn: (id: string) => usersApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setIsDeleteOpen(false);
@@ -110,10 +110,10 @@ export default function UsersPage() {
       cell: ({ row }) => <StatusBadge status={row.original.STATUS} />,
     },
     {
-      accessorKey: "CREATED_AT",
+      accessorKey: "CRIADO_EM",
       header: "Criado em",
       cell: ({ row }) =>
-        new Date(row.original.CREATED_AT).toLocaleDateString("pt-BR"),
+        new Date(row.original.CRIADO_EM).toLocaleDateString("pt-BR"),
     },
     {
       id: "actions",
