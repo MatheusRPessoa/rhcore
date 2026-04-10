@@ -22,7 +22,7 @@ import { Spinner } from "@/components/ui/spinner";
 import type { SystemUser, CreateUserData, UpdateUserData } from "@/lib/types";
 
 const userSchema = z.object({
-  NOME_USUARIO: z.string().min(1, "Usuário é obrigatório"),
+  NOME_USUARIO: z.string().min(1, "O Nome do usuário é obrigatório"),
   EMAIL: z.string().email("Email inválido").optional(),
   SENHA: z
     .string()
