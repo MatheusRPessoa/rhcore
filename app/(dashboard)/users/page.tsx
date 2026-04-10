@@ -117,7 +117,7 @@ export default function UsersPage() {
     },
     {
       id: "actions",
-      header: "",
+      header: "Ações",
       cell: ({ row }) => {
         const user = row.original;
         return (

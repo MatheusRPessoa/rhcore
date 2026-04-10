@@ -190,6 +190,7 @@ export interface UpdateRequestData extends Partial<CreateRequestData> {
 export interface SystemUser {
   ID: string;
   NOME_USUARIO: string;
+  EMAIL: string;
   STATUS: "ATIVO" | "INATIVO";
   CRIADO_EM: string;
   ATUALIZADO_POR?: string | null;
@@ -197,12 +198,14 @@ export interface SystemUser {
 
 export interface CreateUserData {
   NOME_USUARIO: string;
-  PASSWORD: string;
+  EMAIL: string;
+  SENHA: string;
 }
 
 export interface UpdateUserData {
   NOME_USUARIO?: string;
-  PASSWORD?: string;
+  EMAIL?: string;
+  SENHA?: string;
   STATUS?: "ATIVO" | "INATIVO";
 }
 
