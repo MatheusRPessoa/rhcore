@@ -23,7 +23,8 @@ import type { SystemUser, CreateUserData, UpdateUserData } from "@/lib/types";
 
 const userSchema = z.object({
   NOME_USUARIO: z.string().min(1, "Usuário é obrigatório"),
-  PASSWORD: z
+  EMAIL: z.string().email("Email inválido").optional(),
+  SENHA: z
     .string()
     .min(6, "Senha deve ter no mínimo 6 caracteres")
     .optional()
@@ -56,41 +57,42 @@ export function UserForm({
     resolver: zodResolver(
       user
         ? userSchema.extend({
-            PASSWORD: z
+            SENHA: z
               .string()
               .min(6, "Senha deve ter no mínimo 6 caracteres")
               .optional()
               .or(z.literal("")),
           })
         : userSchema.extend({
-            PASSWORD: z
-              .string()
-              .min(6, "Senha deve ter no mínimo 6 caracteres"),
+            SENHA: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
           }),
     ),
     defaultValues: {
       NOME_USUARIO: user?.NOME_USUARIO || "",
-      PASSWORD: "",
+      EMAIL: user?.EMAIL || "",
+      SENHA: "",
       STATUS: user?.STATUS || "ATIVO",
     },
   });
 
   const status = useWatch({ control, name: "STATUS" });
 
-  const handleFormSubmit = async (data: UserFormData) => {
+  const handleFormSubmit = async (formValues: UserFormData) => {
     if (user) {
       const payload: UpdateUserData = {
-        NOME_USUARIO: data.NOME_USUARIO,
-        STATUS: data.STATUS,
+        NOME_USUARIO: formValues.NOME_USUARIO,
+        EMAIL: formValues.EMAIL,
+        STATUS: formValues.STATUS,
       };
-      if (data.PASSWORD) {
-        payload.PASSWORD = data.PASSWORD;
+      if (formValues.SENHA) {
+        payload.SENHA = formValues.SENHA;
       }
       await onSubmit(payload);
     } else {
       await onSubmit({
-        NOME_USUARIO: data.NOME_USUARIO,
-        PASSWORD: data.PASSWORD!,
+        NOME_USUARIO: formValues.NOME_USUARIO,
+        EMAIL: formValues.EMAIL,
+        SENHA: formValues.SENHA!,
       });
     }
   };
@@ -109,14 +111,20 @@ export function UserForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="PASSWORD">
+          <FieldLabel htmlFor="EMAIL">Email</FieldLabel>
+          <Input id="EMAIL" type="email" {...register("EMAIL")} />
+          {errors.EMAIL && (
+            <FieldMessage variant="error">{errors.EMAIL.message}</FieldMessage>
+          )}
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="SENHA">
             {user ? "Nova Senha (deixe em branco para manter)" : "Senha *"}
           </FieldLabel>
-          <Input id="PASSWORD" type="password" {...register("PASSWORD")} />
-          {errors.PASSWORD && (
-            <FieldMessage variant="error">
-              {errors.PASSWORD.message}
-            </FieldMessage>
+          <Input id="SENHA" type="password" {...register("SENHA")} />
+          {errors.SENHA && (
+            <FieldMessage variant="error">{errors.SENHA.message}</FieldMessage>
           )}
         </Field>
 
