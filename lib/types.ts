@@ -189,19 +189,19 @@ export interface UpdateRequestData extends Partial<CreateRequestData> {
 
 export interface SystemUser {
   ID: string;
-  USERNAME: string;
+  NOME_USUARIO: string;
   STATUS: "ATIVO" | "INATIVO";
   CRIADO_EM: string;
   ATUALIZADO_POR?: string | null;
 }
 
 export interface CreateUserData {
-  USERNAME: string;
+  NOME_USUARIO: string;
   PASSWORD: string;
 }
 
 export interface UpdateUserData {
-  USERNAME?: string;
+  NOME_USUARIO?: string;
   PASSWORD?: string;
   STATUS?: "ATIVO" | "INATIVO";
 }
