@@ -2,6 +2,7 @@ import { Employee } from 'src/employees/entities/employee.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { VacationStatusEnum } from '../enums/vacation-status.enum';
 import { BaseEntity } from 'src/common/entities/base.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Entity('FERIAS')
 export class Vacation extends BaseEntity {
@@ -34,9 +35,9 @@ export class Vacation extends BaseEntity {
   })
   OBSERVACAO: string | null;
 
-  @ManyToOne(() => Employee, { nullable: true })
+  @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'APROVADO_POR_ID' })
-  APROVADO_POR: Employee | null;
+  APROVADO_POR: User | null;
 
   @Column({ name: 'DATA_APROVACAO', type: 'date', nullable: true })
   DATA_APROVACAO: Date | null;

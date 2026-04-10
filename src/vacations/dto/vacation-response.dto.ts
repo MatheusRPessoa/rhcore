@@ -13,12 +13,26 @@ export class VacationEmployeeDto {
   MATRICULA: string;
 }
 
+export class VacationApproverDto {
+  @ApiProperty({ example: 'a3bb189e-8bf9-3888-9912-ace4e6543002' })
+  ID: string;
+
+  @ApiProperty({ example: 'joao.silva' })
+  NOME_USUARIO: string;
+
+  @ApiProperty({ example: 'joao@email.com' })
+  EMAIL: string;
+}
+
 export class VacationDataDto {
   @ApiProperty({ example: 'a3bb189e-8bf9-3888-9912-ace4e6543002' })
   ID: string;
 
   @ApiProperty({ type: () => VacationEmployeeDto })
   FUNCIONARIO: VacationEmployeeDto;
+
+  @ApiProperty({ type: () => VacationApproverDto })
+  APROVADO_POR: VacationApproverDto | null;
 
   @ApiProperty({ example: '2025-07-01' })
   DATA_INICIO: Date;
@@ -37,9 +51,6 @@ export class VacationDataDto {
 
   @ApiPropertyOptional({ example: 'Férias programadas do segundo semestre' })
   OBSERVACAO: string | null;
-
-  @ApiPropertyOptional({ type: () => VacationEmployeeDto })
-  APROVADO_POR: VacationEmployeeDto | null;
 
   @ApiPropertyOptional({ example: '2025-06-15' })
   DATA_APROVACAO: Date | null;
