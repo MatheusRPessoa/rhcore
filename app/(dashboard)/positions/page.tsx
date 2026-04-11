@@ -126,7 +126,7 @@ export default function PositionsPage() {
     },
     {
       id: "actions",
-      header: "",
+      header: "Ações",
       cell: ({ row }) => {
         const position = row.original;
         return (

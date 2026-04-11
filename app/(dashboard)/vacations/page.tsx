@@ -175,7 +175,7 @@ export default function VacationsPage() {
     },
     {
       id: "actions",
-      header: "",
+      header: "Ações",
       cell: ({ row }) => {
         const vacation = row.original;
         return (

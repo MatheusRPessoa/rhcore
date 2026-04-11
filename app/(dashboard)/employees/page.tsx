@@ -161,7 +161,7 @@ export default function EmployeesPage() {
     },
     {
       id: "actions",
-      header: "",
+      header: "Ações",
       cell: ({ row }) => {
         const employee = row.original;
         return (
