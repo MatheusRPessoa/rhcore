@@ -125,7 +125,7 @@ export default function DepartmentsPage() {
     },
     {
       id: "actions",
-      header: "",
+      header: "Ações",
       cell: ({ row }) => {
         const department = row.original;
         return (
