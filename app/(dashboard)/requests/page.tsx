@@ -150,7 +150,7 @@ export default function RequestsPage() {
     },
     {
       id: "actions",
-      header: "",
+      header: "Ações",
       cell: ({ row }) => {
         const request = row.original;
         return (
