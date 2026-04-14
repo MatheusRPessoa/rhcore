@@ -144,6 +144,41 @@ export const authApi = {
   getCurrentUser: async (): Promise<ApiResponse<User>> => {
     return apiRequest<ApiResponse<User>>("/auth/me");
   },
+
+  forgotPassword: async (
+    email: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ EMAIL: email }),
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      throw { message: body?.message ?? "E-mail inválido ou ausente" };
+    }
+
+    return response.json();
+  },
+
+  resetPassword: async (
+    token: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    const response = await fetch(`${API_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, new_password: newPassword }),
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      throw { message: body?.message ?? "Token inválido ou expirado" };
+    }
+
+    return response.json();
+  },
 };
 
 // Employees API
