@@ -1,5 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +34,16 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
+  const searchParams = useSearchParams();
+  const resetSuccess = searchParams.get("reset") === "success";
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +88,11 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {resetSuccess && (
+            <div className="p-3 mb-4 text-sm text-green-700 bg-green-100 rounded-md">
+              Senha redefinida com sucesso. Faça login com sua nova senha.
+            </div>
+          )}
           <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               <Field>
@@ -119,6 +137,14 @@ export default function LoginPage() {
                 )}
                 Entrar
               </Button>
+              <div className="text-center">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-muted-foreground hover:underline"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
             </FieldGroup>
           </form>
         </CardContent>
