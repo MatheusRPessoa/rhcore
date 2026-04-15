@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "prepare": "node -e \"if (process.env.HUSKY !== '0') require('child_process').execSync('husky', {stdio: 'inherit'})\"",
+    "prepare": "husky || true",
     "commit": "cz",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
