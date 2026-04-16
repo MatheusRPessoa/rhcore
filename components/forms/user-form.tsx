@@ -138,25 +138,25 @@ export function UserForm({
           )}
         </Field>
 
-        <Field>
-          <FieldLabel>Função *</FieldLabel>
-          <Select
-            value={role}
-            onValueChange={(value) => setValue("ROLE", value as UserRole)}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ADMIN">Administrador</SelectItem>
-              <SelectItem value="MANAGER">Gerente</SelectItem>
-              <SelectItem value="EMPLOYEE">Funcionário</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
+        <div className="grid grid-cols-2 gap-4">
+          <Field>
+            <FieldLabel>Função *</FieldLabel>
+            <Select
+              value={role}
+              onValueChange={(value) => setValue("ROLE", value as UserRole)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ADMIN">Administrador</SelectItem>
+                <SelectItem value="MANAGER">Gerente</SelectItem>
+                <SelectItem value="EMPLOYEE">Funcionário</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
 
-        {user && (
-          <div className="grid grid-cols-2 gap-4">
+          {user && (
             <Field>
               <FieldLabel>Status</FieldLabel>
               <Select
@@ -174,25 +174,8 @@ export function UserForm({
                 </SelectContent>
               </Select>
             </Field>
-
-            <Field>
-              <FieldLabel>Função</FieldLabel>
-              <Select
-                value={role}
-                onValueChange={(value) => setValue("ROLE", value as UserRole)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ADMIN">Administrador</SelectItem>
-                  <SelectItem value="MANAGER">Gerente</SelectItem>
-                  <SelectItem value="EMPLOYEE">Funcionário</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="flex justify-end gap-2 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
