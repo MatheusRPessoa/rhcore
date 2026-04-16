@@ -1,5 +1,7 @@
 "use client";
 
+import { useAuth } from "@/contexts/auth-context";
+import type { UserRole } from "@/lib/types";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -29,21 +31,25 @@ const mainNavItems = [
     title: "Dashboard",
     url: "/",
     icon: LayoutDashboard,
+    roles: ["ADMIN", "MANAGER", "EMPLOYEE"] as UserRole[],
   },
   {
     title: "Funcionários",
     url: "/employees",
     icon: Users,
+    roles: ["ADMIN", "MANAGER"] as UserRole[],
   },
   {
     title: "Departamentos",
     url: "/departments",
     icon: Building2,
+    roles: ["ADMIN", "MANAGER"] as UserRole[],
   },
   {
     title: "Cargos",
     url: "/positions",
     icon: Briefcase,
+    roles: ["ADMIN", "MANAGER"] as UserRole[],
   },
 ];
 
@@ -52,11 +58,13 @@ const requestNavItems = [
     title: "Férias",
     url: "/vacations",
     icon: Palmtree,
+    roles: ["ADMIN", "MANAGER", "EMPLOYEE"] as UserRole[],
   },
   {
     title: "Solicitações",
     url: "/requests",
     icon: FileText,
+    roles: ["ADMIN", "MANAGER", "EMPLOYEE"] as UserRole[],
   },
 ];
 
@@ -65,11 +73,16 @@ const adminNavItems = [
     title: "Usuários",
     url: "/users",
     icon: UserCog,
+    roles: ["ADMIN"] as UserRole[],
   },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { role } = useAuth();
+
+  const filterByRole = <T extends { roles: UserRole[] }>(items: T[]) =>
+    items.filter((item) => role && item.roles.includes(role));
 
   const isActive = (url: string) => {
     if (url === "/") {
@@ -98,7 +111,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => (
+              {filterByRole(mainNavItems).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <Link href={item.url}>
@@ -112,41 +125,45 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Gestão</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {requestNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <Link href={item.url}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {filterByRole(requestNavItems).length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Gestão</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {filterByRole(requestNavItems).map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link href={item.url}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Administração</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {adminNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <Link href={item.url}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {filterByRole(adminNavItems).length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administração</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {filterByRole(adminNavItems).map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link href={item.url}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border p-4">
         <p className="text-xs text-sidebar-foreground/50 text-center">
