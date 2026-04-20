@@ -35,7 +35,7 @@ import type {
 import { useAuth } from "@/contexts/auth-context";
 
 export default function VacationsPage() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const queryClient = useQueryClient();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedVacation, setSelectedVacation] = useState<
@@ -213,7 +213,13 @@ export default function VacationsPage() {
     },
   ];
 
-  const vacations = data?.data || [];
+  const allVacations = data?.data || [];
+  const vacations =
+    role !== "EMPLOYEE"
+      ? allVacations
+      : allVacations.filter(
+          (vacation) => vacation.FUNCIONARIO_ID === user?.FUNCIONARIO_ID,
+        );
 
   return (
     <div>
