@@ -28,7 +28,7 @@ import type {
 import { useAuth } from "@/contexts/auth-context";
 
 export default function RequestsPage() {
-  const { user, role } = useAuth();
+  const { user, role, hasAppPermission } = useAuth();
   const queryClient = useQueryClient();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<
@@ -178,6 +178,9 @@ export default function RequestsPage() {
       header: "Ações",
       cell: ({ row }) => {
         const request = row.original;
+        const isOwnRequest = request.FUNCIONARIO_ID === user?.FUNCIONARIO_ID;
+        const canApprove =
+          hasAppPermission("APPROVE_REQUESTS") && !isOwnRequest;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -198,24 +201,26 @@ export default function RequestsPage() {
                 <Trash2 className="mr-2 h-4 w-4" />
                 Excluir
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => openApproveDialog(request)}
-                className="text-green-500"
-              >
-                <Check className="mr-2 h-4 w-4" />
-                Aprovar
-              </DropdownMenuItem>
+              {canApprove && (
+                <DropdownMenuItem
+                  onClick={() => openApproveDialog(request)}
+                  className="text-green-500"
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  Aprovar
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
       },
     },
   ];
-  const visibleColumns =
-    role === "EMPLOYEE"
-      ? columns.filter((col) => col.id !== "actions")
-      : columns;
   const requests = data?.data || [];
+
+  const visibleColumns = hasAppPermission("APPROVE_REQUESTS")
+    ? columns
+    : columns.filter((col) => col.id !== "actions");
 
   return (
     <div>

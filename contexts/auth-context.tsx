@@ -10,23 +10,37 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { authApi, setTokens } from "@/lib/api";
-import type { User, LoginCredentials, UserRole } from "@/lib/types";
+import type {
+  User,
+  LoginCredentials,
+  UserRole,
+  AppPermission,
+} from "@/lib/types";
 
 interface AuthContextType {
   user: User | null;
   role: UserRole | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  hasAppPermission: (AppPermission: AppPermission) => boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  const hasAppPermission = useCallback(
+    (permission: AppPermission): boolean => {
+      if (!user) return false;
+      if (user.ROLE === "ADMIN") return true;
+      return user.PERMISSIONS?.includes(permission) ?? false;
+    },
+    [user],
+  );
 
   const checkAuth = useCallback(async () => {
     try {
@@ -64,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: user?.ROLE || null,
         isLoading,
         isAuthenticated: !!user,
+        hasAppPermission,
         login,
         logout,
       }}
