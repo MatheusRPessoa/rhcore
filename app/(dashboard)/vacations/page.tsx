@@ -35,7 +35,7 @@ import type {
 import { useAuth } from "@/contexts/auth-context";
 
 export default function VacationsPage() {
-  const { user, role } = useAuth();
+  const { user, role, hasAppPermission } = useAuth();
   const queryClient = useQueryClient();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedVacation, setSelectedVacation] = useState<
@@ -178,6 +178,9 @@ export default function VacationsPage() {
       header: "Ações",
       cell: ({ row }) => {
         const vacation = row.original;
+        const isOwnVacation = vacation.FUNCIONARIO_ID === user?.FUNCIONARIO_ID;
+        const canApprove =
+          hasAppPermission("APPROVE_VACATIONS") && !isOwnVacation;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -198,24 +201,24 @@ export default function VacationsPage() {
                 <Trash2 className="mr-2 h-4 w-4" />
                 Excluir
               </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onClick={() => openApproveDialog(vacation)}
-                className="text-green-600"
-              >
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Aprovar
-              </DropdownMenuItem>
+              {canApprove && (
+                <DropdownMenuItem
+                  onClick={() => openApproveDialog(vacation)}
+                  className="text-green-600"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Aprovar
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
       },
     },
   ];
-  const visibleColumns =
-    role === "EMPLOYEE"
-      ? columns.filter((col) => col.id !== "actions")
-      : columns;
+  const visibleColumns = hasAppPermission("APPROVE_VACATIONS")
+    ? columns
+    : columns.filter((col) => col.id !== "actions");
 
   const allVacations = data?.data || [];
   const vacations =
