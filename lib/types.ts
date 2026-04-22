@@ -30,10 +30,18 @@ export interface User {
   EMAIL: string;
   STATUS: "ATIVO" | "INATIVO";
   ROLE: UserRole;
+  PERMISSIONS: AppPermission[];
   CRIADO_EM: string;
   FUNCIONARIO_ID?: string;
   ATUALIZADO_POR?: string | null;
 }
+
+export type AppPermission =
+  | "APPROVE_VACATIONS"
+  | "APPROVE_REQUESTS"
+  | "VIEW_ALL_EMPLOYEES"
+  | "MANAGE_PAYROLL"
+  | "VIEW_REPORTS";
 
 export interface Employee {
   ID: string;
