@@ -275,6 +275,7 @@ export interface Payroll {
   DESCONTO_INSS: string;
   DESCONTO_IRRF: string;
   OUTROS_DESCONTOS: string;
+  DESCONTO_VT: string;
   SALARIO_LIQUIDO: string;
   STATUS_FOLHA: PayrollStatus;
   OBSERVACAO: string | null;
@@ -292,6 +293,7 @@ export interface CreatePayrollData {
   DESCONTO_INSS?: number;
   DESCONTO_IRRF?: number;
   OUTROS_DESCONTOS?: number;
+  VALOR_PASSAGEM?: number;
   OBSERVACAO?: string;
 }
 
