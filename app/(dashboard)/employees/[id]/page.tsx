@@ -29,6 +29,22 @@ const formatCurrency = (value: string | number) =>
 
 const formatDate = (date: string) => new Date(date).toLocaleDateString("pt-BR");
 
+function calcVacationBalance(dataAdmissao: string, daysTaken: number) {
+  const admissionDate = new Date(dataAdmissao);
+  const today = new Date();
+  const totalMonths =
+    (today.getFullYear() - admissionDate.getFullYear()) * 12 +
+    (today.getMonth() - admissionDate.getMonth());
+  const completePeriods = Math.floor(totalMonths / 12);
+  const monthsInCurrentPeriod = totalMonths % 12;
+  return {
+    totalAccrued: completePeriods * 30,
+    proportionalDays: Math.floor((monthsInCurrentPeriod / 12) * 30),
+    balance: completePeriods * 30 - daysTaken,
+    monthsInCurrentPeriod,
+  };
+}
+
 export default function EmployeeProfilePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -70,6 +86,14 @@ export default function EmployeeProfilePage() {
   const requests = (requestsData?.data || []).filter(
     (r) => r.FUNCIONARIO_ID === id,
   );
+
+  const daysTaken = vacations
+    .filter((v) => v.STATUS_FERIAS === "APROVADO")
+    .reduce((sum, v) => sum + v.DIAS_SOLICITADOS, 0);
+
+  const vacationBalance = employee
+    ? calcVacationBalance(employee.DATA_ADMISSAO, daysTaken)
+    : null;
 
   const handleSlip = async (payrollId: string) => {
     try {
@@ -171,6 +195,56 @@ export default function EmployeeProfilePage() {
           <p className="font-medium">{employee.GESTOR?.NOME || "-"}</p>
         </div>
       </div>
+
+      {vacationBalance && (
+        <div className="rounded-lg border p-6 space-y-4">
+          <h2 className="font-semibold text-base">Saldo de Férias (CLT)</h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="rounded-md bg-muted/40 p-4 text-center">
+              <p className="text-2xl font-bold">
+                {vacationBalance.totalAccrued}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Dias acumulados
+              </p>
+            </div>
+            <div className="rounded-md bg-muted/40 p-4 text-center">
+              <p className="text-2xl font-bold">{daysTaken}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Dias Utilizados
+              </p>
+            </div>
+            <div
+              className={`rounded-md p-4 text-center ${
+                vacationBalance.balance < 0
+                  ? "bg-destructive/10"
+                  : "bg-green-500/10"
+              }`}
+            >
+              <p
+                className={`text-2xl font-bold ${
+                  vacationBalance.balance < 0
+                    ? "text-destructive"
+                    : "text-green-600"
+                }`}
+              >
+                {vacationBalance.balance}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Saldo Disponível
+              </p>
+            </div>
+            <div className="rounded-md bg-muted/40 p-4 text-center">
+              <p className="text-2xl font-bold">
+                {vacationBalance.proportionalDays}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Acumulado ({vacationBalance.monthsInCurrentPeriod} meses)
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-lg border p-6 space-y-4">
         <h2 className="font-semibold text-base">
