@@ -18,15 +18,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
+import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { employeesApi } from "@/lib/api";
 import type {
   Employee,
   CreateEmployeeData,
   UpdateEmployeeData,
 } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 export default function EmployeesPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<
@@ -36,8 +38,6 @@ export default function EmployeesPage() {
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(
     null,
   );
-  const [isViewOpen, setIsViewOpen] = useState(false);
-  const [viewEmployee, setViewEmployee] = useState<Employee | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["employees"],
@@ -115,11 +115,6 @@ export default function EmployeesPage() {
     setIsDeleteOpen(true);
   };
 
-  const openViewDialog = (employee: Employee) => {
-    setViewEmployee(employee);
-    setIsViewOpen(true);
-  };
-
   const columns: ColumnDef<Employee>[] = [
     {
       accessorKey: "MATRICULA",
@@ -177,8 +172,9 @@ export default function EmployeesPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => openViewDialog(employee)}>
-                <Eye className="mr-2 h-4 w-4" />
+              <DropdownMenuItem
+                onClick={() => router.push(`/employees/${employee.ID}`)}
+              >
                 Visualizar
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => openEditForm(employee)}>
@@ -243,94 +239,6 @@ export default function EmployeesPage() {
           isSubmitting={createMutation.isPending || updateMutation.isPending}
           onCancel={() => setIsFormOpen(false)}
         />
-      </FormModal>
-
-      <FormModal
-        open={isViewOpen}
-        onOpenChange={setIsViewOpen}
-        title="Detalhes do Funcionário"
-      >
-        {viewEmployee && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Matrícula</p>
-                <p className="font-medium">{viewEmployee.MATRICULA}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <StatusBadge status={viewEmployee.STATUS} />
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Nome Completo</p>
-              <p className="font-medium">{viewEmployee.NOME}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">CPF</p>
-                <p className="font-medium">{viewEmployee.CPF}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">RG</p>
-                <p className="font-medium">{viewEmployee.RG || "-"}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">E-mail</p>
-                <p className="font-medium">{viewEmployee.EMAIL}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Telefone</p>
-                <p className="font-medium">{viewEmployee.TELEFONE || "-"}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Data de Nascimento
-                </p>
-                <p className="font-medium">
-                  {new Date(viewEmployee.DATA_NASCIMENTO).toLocaleDateString(
-                    "pt-BR",
-                  )}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Data de Admissão
-                </p>
-                <p className="font-medium">
-                  {new Date(viewEmployee.DATA_ADMISSAO).toLocaleDateString(
-                    "pt-BR",
-                  )}
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Departamento</p>
-                <p className="font-medium">
-                  {viewEmployee.DEPARTAMENTO?.NOME || "-"}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Cargo</p>
-                <p className="font-medium">{viewEmployee.CARGO?.NOME || "-"}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Gestor</p>
-              <p className="font-medium">{viewEmployee.GESTOR?.NOME || "-"}</p>
-            </div>
-            <div className="flex justify-end pt-4">
-              <Button variant="outline" onClick={() => setIsViewOpen(false)}>
-                Fechar
-              </Button>
-            </div>
-          </div>
-        )}
       </FormModal>
 
       <ConfirmDialog
