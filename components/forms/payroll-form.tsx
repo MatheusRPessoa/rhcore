@@ -104,6 +104,7 @@ const payrollSchema = z.object({
   DESCONTO_INSS: z.coerce.number().min(0).default(0),
   DESCONTO_IRRF: z.coerce.number().min(0).default(0),
   OUTROS_DESCONTOS: z.coerce.number().min(0).default(0),
+  VALOR_PASSAGEM: z.coerce.number().min(0).optional(),
   OBSERVACAO: z.string().max(500).optional(),
 });
 
@@ -153,6 +154,7 @@ export function PayrollForm({
       DESCONTO_INSS: payroll ? parseFloat(payroll.DESCONTO_INSS) : 0,
       DESCONTO_IRRF: payroll ? parseFloat(payroll.DESCONTO_IRRF) : 0,
       OUTROS_DESCONTOS: payroll ? parseFloat(payroll.OUTROS_DESCONTOS) : 0,
+      VALOR_PASSAGEM: 0,
       OBSERVACAO: payroll?.OBSERVACAO || "",
     },
   });
@@ -166,6 +168,7 @@ export function PayrollForm({
   const descontoInss = useWatch({ control, name: "DESCONTO_INSS" });
   const descontoIrrf = useWatch({ control, name: "DESCONTO_IRRF" });
   const outrosDescontos = useWatch({ control, name: "OUTROS_DESCONTOS" });
+  const valorPassagem = useWatch({ control, name: "VALOR_PASSAGEM" });
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -189,13 +192,19 @@ export function PayrollForm({
     }
   }, [salarioBase, numDependentes]);
 
-  const liquidoPreview = calcLiquido(
-    Number(salarioBase) || 0,
-    Number(bonus) || 0,
-    Number(descontoInss) || 0,
-    Number(descontoIrrf) || 0,
-    Number(outrosDescontos) || 0,
+  const descontoVTPreview = Math.min(
+    Number(valorPassagem) || 0,
+    (Number(salarioBase) || 0) * 0.06,
   );
+
+  const liquidoPreview =
+    calcLiquido(
+      Number(salarioBase) || 0,
+      Number(bonus) || 0,
+      Number(descontoInss) || 0,
+      Number(descontoIrrf) || 0,
+      Number(outrosDescontos) || 0,
+    ) - descontoVTPreview;
 
   const handleFormSubmit = async (data: PayrollFormData) => {
     await onSubmit({
@@ -208,6 +217,7 @@ export function PayrollForm({
       DESCONTO_INSS: data.DESCONTO_INSS,
       DESCONTO_IRRF: data.DESCONTO_IRRF,
       OUTROS_DESCONTOS: data.OUTROS_DESCONTOS,
+      VALOR_PASSAGEM: data.VALOR_PASSAGEM || undefined,
       OBSERVACAO: data.OBSERVACAO || undefined,
     });
   };
@@ -375,6 +385,21 @@ export function PayrollForm({
             />
           </Field>
         </div>
+        <Field>
+          <FieldLabel htmlFor="VALOR_PASSAGEM">
+            Valor da Passagem (R$)
+          </FieldLabel>
+          <Input
+            id="VALOR_PASSAGEM"
+            type="number"
+            step="0.01"
+            min="0"
+            {...register("VALOR_PASSAGEM")}
+          />
+          <FieldMessage>
+            O desconto será de no máximo 6% do salário base
+          </FieldMessage>
+        </Field>
 
         <div className="rounded-md border bg-muted/40 px-4 py-3 flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
