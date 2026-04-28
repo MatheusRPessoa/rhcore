@@ -24,6 +24,7 @@ import {
   Pencil,
   Trash2,
   CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { vacationsApi } from "@/lib/api";
 import type {
@@ -47,6 +48,10 @@ export default function VacationsPage() {
   );
   const [isApproveOpen, setIsApproveOpen] = useState(false);
   const [vacationToApprove, setVacationToApprove] = useState<Vacation | null>(
+    null,
+  );
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [vacationToReject, setVacationToReject] = useState<Vacation | null>(
     null,
   );
 
@@ -108,6 +113,20 @@ export default function VacationsPage() {
     },
   });
 
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateVacationData }) =>
+      vacationsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vacations"] });
+      setIsRejectOpen(false);
+      setVacationToReject(null);
+      toast.success("Férias rejeitadas.");
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message ?? "Erro ao rejeitar férias");
+    },
+  });
+
   const handleSubmit = async (
     formData: CreateVacationData | UpdateVacationData,
   ) => {
@@ -143,6 +162,11 @@ export default function VacationsPage() {
   const openApproveDialog = (vacation: Vacation) => {
     setVacationToApprove(vacation);
     setIsApproveOpen(true);
+  };
+
+  const openRejectDialog = (vacation: Vacation) => {
+    setVacationToReject(vacation);
+    setIsRejectOpen(true);
   };
 
   const columns: ColumnDef<Vacation>[] = [
@@ -212,6 +236,15 @@ export default function VacationsPage() {
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Aprovar
+                </DropdownMenuItem>
+              )}
+              {canApprove && (
+                <DropdownMenuItem
+                  onClick={() => openRejectDialog(vacation)}
+                  className="text-destructive"
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Rejeitar
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -305,6 +338,26 @@ export default function VacationsPage() {
         isLoading={approveMutation.isPending}
         confirmText="Aprovar"
         variant="default"
+      />
+      <ConfirmDialog
+        open={isRejectOpen}
+        onOpenChange={setIsRejectOpen}
+        title="Rejeitar Férias"
+        description={`Tem certeza que deseja rejeitar esta solicitação de férias 
+        de "${vacationToReject?.FUNCIONARIO?.NOME}"?`}
+        onConfirm={() =>
+          vacationToReject &&
+          rejectMutation.mutate({
+            id: vacationToReject.ID,
+            data: {
+              STATUS_FERIAS: "REJEITADO" as VacationStatus,
+              DATA_APROVACAO: new Date().toISOString(),
+              APROVADO_POR_ID: user?.ID,
+            },
+          })
+        }
+        isLoading={rejectMutation.isPending}
+        confirmText="Rejeitar"
       />
     </div>
   );
