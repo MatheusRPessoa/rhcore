@@ -18,7 +18,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, MoreHorizontal, Pencil, Trash2, Check } from "lucide-react";
+import {
+  Plus,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Check,
+  XCircle,
+} from "lucide-react";
 import { requestsApi } from "@/lib/api";
 import type {
   HRRequest,
@@ -41,6 +48,10 @@ export default function RequestsPage() {
 
   const [isApproveOpen, setIsApproveOpen] = useState(false);
   const [requestToApprove, setRequestToApprove] = useState<HRRequest | null>(
+    null,
+  );
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [requestToReject, setRequestToReject] = useState<HRRequest | null>(
     null,
   );
 
@@ -138,6 +149,25 @@ export default function RequestsPage() {
     setIsApproveOpen(true);
   };
 
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateRequestData }) =>
+      requestsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["requests"] });
+      setIsRejectOpen(false);
+      setRequestToReject(null);
+      toast.success("Solicitação rejeitada.");
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message ?? "Erro ao rejeitar solicitação");
+    },
+  });
+
+  const openRejectDialog = (request: HRRequest) => {
+    setRequestToReject(request);
+    setIsRejectOpen(true);
+  };
+
   const columns: ColumnDef<HRRequest>[] = [
     {
       accessorKey: "FUNCIONARIO",
@@ -217,6 +247,15 @@ export default function RequestsPage() {
                 >
                   <Check className="mr-2 h-4 w-4" />
                   Aprovar
+                </DropdownMenuItem>
+              )}
+              {canApprove && (
+                <DropdownMenuItem
+                  onClick={() => openRejectDialog(request)}
+                  className="text-destructive"
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Rejeitar
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -300,6 +339,26 @@ export default function RequestsPage() {
         isLoading={approveMutation.isPending}
         confirmText="Aprovar"
         variant="default"
+      />
+
+      <ConfirmDialog
+        open={isRejectOpen}
+        onOpenChange={setIsRejectOpen}
+        title="Rejeitar Solicitação"
+        description={`Tem certeza que deseja rejeitar esta solicitação de "${requestToReject?.FUNCIONARIO?.NOME}"?`}
+        onConfirm={() =>
+          requestToReject &&
+          rejectMutation.mutate({
+            id: requestToReject.ID,
+            data: {
+              STATUS: "INATIVO",
+              DATA_RESPOSTA: new Date().toISOString(),
+              APROVADO_POR_ID: user?.ID,
+            },
+          })
+        }
+        isLoading={rejectMutation.isPending}
+        confirmText="Rejeitar"
       />
     </div>
   );
