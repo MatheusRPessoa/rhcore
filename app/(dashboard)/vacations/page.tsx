@@ -179,13 +179,17 @@ export default function VacationsPage() {
       accessorKey: "DATA_INICIO",
       header: "Data Início",
       cell: ({ row }) =>
-        new Date(row.original.DATA_INICIO).toLocaleDateString("pt-BR"),
+        new Date(row.original.DATA_INICIO + "T00:00:00").toLocaleDateString(
+          "pt-BR",
+        ),
     },
     {
       accessorKey: "DATA_FIM",
       header: "Data Fim",
       cell: ({ row }) =>
-        new Date(row.original.DATA_FIM).toLocaleDateString("pt-BR"),
+        new Date(row.original.DATA_FIM + "T00:00:00").toLocaleDateString(
+          "pt-BR",
+        ),
     },
     {
       accessorKey: "DIAS_SOLICITADOS",
