@@ -27,7 +27,8 @@ const MESES = [
 const formatCurrency = (value: string | number) =>
   Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-const formatDate = (date: string) => new Date(date).toLocaleDateString("pt-BR");
+const formatDate = (date: string) =>
+  new Date(date.split("T")[0] + "T00:00:00").toLocaleDateString("pt-BR");
 
 function calcVacationBalance(dataAdmissao: string, daysTaken: number) {
   const admissionDate = new Date(dataAdmissao);
@@ -52,27 +53,31 @@ export default function EmployeeProfilePage() {
   const { data: employeeData, isLoading: loadingEmployee } = useQuery({
     queryKey: ["employees", id],
     queryFn: () => employeesApi.getById(id),
+    staleTime: 0,
   });
 
   const { data: payrollData } = useQuery({
     queryKey: ["payroll"],
     queryFn: () => payrollApi.getAll(),
+    staleTime: 0,
   });
 
   const { data: vacationsData } = useQuery({
     queryKey: ["vacations"],
     queryFn: () => vacationsApi.getAll(),
+    staleTime: 0,
   });
 
   const { data: requestsData } = useQuery({
     queryKey: ["requests"],
     queryFn: () => requestsApi.getAll(),
+    staleTime: 0,
   });
 
   const employee = employeeData?.data;
 
   const payrolls = (payrollData?.data || [])
-    .filter((p) => p.FUNCIONARIO_ID == id)
+    .filter((p) => (p.FUNCIONARIO?.ID ?? p.FUNCIONARIO_ID) === id)
     .sort((a, b) => {
       if (b.ANO_REFERENCIA !== a.ANO_REFERENCIA)
         return b.ANO_REFERENCIA - a.ANO_REFERENCIA;
@@ -80,11 +85,11 @@ export default function EmployeeProfilePage() {
     });
 
   const vacations = (vacationsData?.data || []).filter(
-    (v) => v.FUNCIONARIO_ID === id,
+    (v) => (v.FUNCIONARIO?.ID ?? v.FUNCIONARIO_ID) === id,
   );
 
   const requests = (requestsData?.data || []).filter(
-    (r) => r.FUNCIONARIO_ID === id,
+    (r) => (r.FUNCIONARIO?.ID ?? r.FUNCIONARIO_ID) === id,
   );
 
   const daysTaken = vacations
