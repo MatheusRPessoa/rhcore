@@ -26,6 +26,9 @@ import type {
   Payroll,
   CreatePayrollData,
   UpdatePayrollData,
+  Benefit,
+  CreateBenefitData,
+  UpdateBenefitData,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
@@ -457,5 +460,44 @@ export const payrollApi = {
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");
     setTimeout(() => URL.revokeObjectURL(url), 10000);
+  },
+};
+
+export const benefitsApi = {
+  getAll: async (): Promise<ApiResponse<Benefit[]>> => {
+    return apiRequest<ApiResponse<Benefit[]>>("/benefits");
+  },
+
+  getEmployee: async (employeeId: string): Promise<ApiResponse<Benefit[]>> => {
+    return apiRequest<ApiResponse<Benefit[]>>(
+      `/benefits/employee/${employeeId}`,
+    );
+  },
+
+  getById: async (id: string): Promise<ApiResponse<Benefit>> => {
+    return apiRequest<ApiResponse<Benefit>>(`/benefits/${id}`);
+  },
+
+  create: async (data: CreateBenefitData): Promise<ApiResponse<Benefit>> => {
+    return apiRequest<ApiResponse<Benefit>>("/benefits", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (
+    id: string,
+    data: UpdateBenefitData,
+  ): Promise<ApiResponse<Benefit>> => {
+    return apiRequest<ApiResponse<Benefit>>(`/benefits/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: string): Promise<ApiResponse<void>> => {
+    return apiRequest<ApiResponse<void>>(`/benefits/${id}`, {
+      method: "DELETE",
+    });
   },
 };

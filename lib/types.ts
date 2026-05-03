@@ -300,3 +300,43 @@ export interface CreatePayrollData {
 export interface UpdatePayrollData extends Partial<CreatePayrollData> {
   STATUS_FOLHA?: PayrollStatus;
 }
+
+export type BenefitsType =
+  | "VALE_TRANSPORTE"
+  | "VALE_REFEICAO"
+  | "PLANO_SAUDE"
+  | "OUTROS";
+
+export type BenefitsStatus = "ATIVO" | "INATIVO";
+
+export interface Benefit {
+  ID: string;
+  FUNCIONARIO: {
+    ID: string;
+    NOME: string;
+    MATRICULA: string;
+  };
+  TIPO: BenefitsType;
+  DESCRICAO?: string | null;
+  VALOR: number;
+  DATA_INICIO: string;
+  DATA_FIM?: string | null;
+  STATUS_BENEFICIO: BenefitsStatus;
+  OBSERVACAO: string | null;
+  CRIADO_POR: string;
+  CRIADO_EM: string;
+}
+
+export interface CreateBenefitData {
+  FUNCIONARIO_ID: string;
+  TIPO: BenefitsType;
+  VALOR: number;
+  DATA_INICIO: string;
+  DESCRICAO?: string;
+  DATA_FIM?: string;
+  OBSERVACAO?: string;
+}
+
+export interface UpdateBenefitData extends Partial<CreateBenefitData> {
+  STATUS_BENEFICIO?: BenefitsStatus;
+}
