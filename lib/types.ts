@@ -300,3 +300,90 @@ export interface CreatePayrollData {
 export interface UpdatePayrollData extends Partial<CreatePayrollData> {
   STATUS_FOLHA?: PayrollStatus;
 }
+
+export type BenefitsType =
+  | "VALE_TRANSPORTE"
+  | "VALE_REFEICAO"
+  | "PLANO_SAUDE"
+  | "OUTROS";
+
+export type BenefitsStatus = "ATIVO" | "INATIVO";
+
+export interface ValeTransporteMetadata {
+  VALOR_PASSAGEM: number;
+  QUANTIDADE_DIARIA: number;
+  DIAS_UTEIS: number;
+}
+
+export interface ValeRefeicaoMetadata {
+  VALOR_DIARIO: number;
+  DIAS_UTEIS: number;
+}
+
+export interface PlanoSaudeMetadata {
+  OPERADORA: string;
+  TIPO_PLANO: "INDIVIDUAL" | "FAMILIAR" | "EMPRESARIAL";
+  COBERTURA: "BASICO" | "INTERMEDIARIO" | "PREMIUM";
+  PERCENTUAL_FUNCIONARIO: number;
+}
+
+export type BenefitMetadata =
+  | ValeTransporteMetadata
+  | ValeRefeicaoMetadata
+  | PlanoSaudeMetadata
+  | null;
+
+export interface Benefit {
+  ID: string;
+  FUNCIONARIO: {
+    ID: string;
+    NOME: string;
+    MATRICULA: string;
+  };
+  TIPO: BenefitsType;
+  DESCRICAO?: string | null;
+  VALOR: number;
+  METADADOS: BenefitMetadata;
+  DATA_INICIO: string;
+  DATA_FIM?: string | null;
+  STATUS_BENEFICIO: BenefitsStatus;
+  OBSERVACAO: string | null;
+  CRIADO_POR: string;
+  CRIADO_EM: string;
+}
+
+interface BaseBenefitData {
+  FUNCIONARIO_ID: string;
+  DATA_INICIO: string;
+  DATA_FIM?: string;
+  DESCRICAO?: string;
+  OBSERVACAO?: string;
+}
+
+export type CreateBenefitData =
+  | (BaseBenefitData & {
+      TIPO: "VALE_TRANSPORTE";
+      METADADOS: ValeTransporteMetadata;
+    })
+  | (BaseBenefitData & {
+      TIPO: "VALE_REFEICAO";
+      METADADOS: ValeRefeicaoMetadata;
+    })
+  | (BaseBenefitData & {
+      TIPO: "PLANO_SAUDE";
+      VALOR: number;
+      METADADOS: PlanoSaudeMetadata;
+    })
+  | (BaseBenefitData & { TIPO: "OUTROS"; VALOR: number });
+
+export interface UpdateBenefitData {
+  FUNCIONARIO_ID?: string;
+  TIPO?: BenefitsType;
+  VALOR?: number;
+  DATA_INICIO?: string;
+  DATA_FIM?: string;
+  DESCRICAO?: string;
+  OBSERVACAO?: string;
+  STATUS_BENEFICIO?: BenefitsStatus;
+  METADADOS?: BenefitMetadata;
+}

@@ -14,6 +14,7 @@ import {
   UserCog,
   BarChart2,
   DollarSign,
+  Gift,
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,6 +28,8 @@ import {
   SidebarMenuItem,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+import { title } from "process";
+import { url } from "inspector";
 const mainNavItems = [
   {
     title: "Dashboard",
@@ -80,6 +83,12 @@ const requestNavItems = [
     title: "Solicitações",
     url: "/requests",
     icon: FileText,
+    roles: ["ADMIN", "MANAGER", "EMPLOYEE"] as UserRole[],
+  },
+  {
+    title: "Benefícios",
+    url: "/benefits",
+    icon: Gift,
     roles: ["ADMIN", "MANAGER", "EMPLOYEE"] as UserRole[],
   },
 ];

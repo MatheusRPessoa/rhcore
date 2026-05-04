@@ -10,22 +10,23 @@ interface StatusBadgeProps {
 }
 
 const statusVariantMap: Record<string, StatusVariant> = {
-  // General statuses
   ATIVO: "success",
   INATIVO: "default",
 
-  // Vacation statuses
   PENDENTE: "warning",
   APROVADO: "success",
   REJEITADO: "error",
   CANCELADO: "default",
 
-  // Request types
   DOCUMENTO: "info",
   EQUIPAMENTO: "info",
   BENEFICIO: "info",
   TREINAMENTO: "info",
   OUTROS: "default",
+
+  VALE_TRANSPORTE: "info",
+  VALE_REFEICAO: "info",
+  PLANO_SAUDE: "info",
 };
 
 const variantStyles: Record<StatusVariant, string> = {
@@ -48,6 +49,9 @@ const statusLabels: Record<string, string> = {
   BENEFICIO: "Benefício",
   TREINAMENTO: "Treinamento",
   OUTROS: "Outros",
+  VALE_TRANSPORTE: "Vale Transporte",
+  VALE_REFEICAO: "Vale Refeição",
+  PLANO_SAUDE: "Plano de Saúde",
 };
 
 export function StatusBadge({ status, variant, className }: StatusBadgeProps) {
