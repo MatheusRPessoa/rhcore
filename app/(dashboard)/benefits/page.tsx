@@ -136,6 +136,7 @@ export default function BenefitsPage() {
     {
       accessorKey: "TIPO",
       header: "Tipo",
+      filterFn: "equals",
       cell: ({ row }) => <StatusBadge status={row.original.TIPO} />,
     },
     {
@@ -156,6 +157,7 @@ export default function BenefitsPage() {
     {
       accessorKey: "STATUS_BENEFICIO",
       header: "Status",
+      filterFn: "equals",
       cell: ({ row }) => <StatusBadge status={row.original.STATUS_BENEFICIO} />,
     },
     {
@@ -221,6 +223,26 @@ export default function BenefitsPage() {
           data={benefits}
           searchKey="FUNCIONARIO"
           searchPlaceholder="Buscar por funcionário..."
+          filters={[
+            {
+              column: "TIPO",
+              placeholder: "Tipo",
+              options: [
+                { label: "Vale Transporte", value: "VALE_TRANSPORTE" },
+                { label: "Vale Refeição", value: "VALE_REFEICAO" },
+                { label: "Plano de Saúde", value: "PLANO_SAUDE" },
+                { label: "Outros", value: "OUTROS" },
+              ],
+            },
+            {
+              column: "STATUS_BENEFICIO",
+              placeholder: "Status",
+              options: [
+                { label: "Ativo", value: "ATIVO" },
+                { label: "Inativo", value: "INATIVO" },
+              ],
+            },
+          ]}
         />
       )}
 

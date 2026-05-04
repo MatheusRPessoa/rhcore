@@ -198,6 +198,7 @@ export default function VacationsPage() {
     {
       accessorKey: "STATUS_FERIAS",
       header: "Status",
+      filterFn: "equals",
       cell: ({ row }) => <StatusBadge status={row.original.STATUS_FERIAS} />,
     },
     {
@@ -286,6 +287,18 @@ export default function VacationsPage() {
           data={vacations}
           searchKey="FUNCIONARIO"
           searchPlaceholder="Buscar por funcionário..."
+          filters={[
+            {
+              column: "STATUS_FERIAS",
+              placeholder: "Status",
+              options: [
+                { label: "Pendente", value: "PENDENTE" },
+                { label: "Aprovado", value: "APROVADO" },
+                { label: "Rejeitado", value: "REJEITADO" },
+                { label: "Cancelado", value: "CANCELADO" },
+              ],
+            },
+          ]}
         />
       )}
 

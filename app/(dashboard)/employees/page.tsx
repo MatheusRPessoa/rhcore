@@ -150,6 +150,7 @@ export default function EmployeesPage() {
     {
       accessorKey: "STATUS",
       header: "Status",
+      filterFn: "equals",
       cell: ({ row }) => <StatusBadge status={row.original.STATUS} />,
     },
     {
@@ -220,6 +221,16 @@ export default function EmployeesPage() {
           data={employees}
           searchKey="NOME"
           searchPlaceholder="Buscar por nome..."
+          filters={[
+            {
+              column: "STATUS",
+              placeholder: "Status",
+              options: [
+                { label: "Ativo", value: "ATIVO" },
+                { label: "Inativo", value: "INATIVO" },
+              ],
+            },
+          ]}
         />
       )}
 
