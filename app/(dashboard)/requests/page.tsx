@@ -177,6 +177,7 @@ export default function RequestsPage() {
     {
       accessorKey: "TIPO",
       header: "Tipo",
+      filterFn: "equals",
       cell: ({ row }) => <StatusBadge status={row.original.TIPO} />,
     },
     {
@@ -191,6 +192,7 @@ export default function RequestsPage() {
     {
       accessorKey: "STATUS",
       header: "Status",
+      filterFn: "equals",
       cell: ({ row }) => <StatusBadge status={row.original.STATUS} />,
     },
     {
@@ -293,6 +295,28 @@ export default function RequestsPage() {
           data={requests}
           searchKey="FUNCIONARIO"
           searchPlaceholder="Buscar por funcionário..."
+          filters={[
+            {
+              column: "STATUS",
+              placeholder: "Status",
+              options: [
+                { label: "Pendente", value: "PENDENTE" },
+                { label: "Ativo", value: "ATIVO" },
+                { label: "Inativo", value: "INATIVO" },
+              ],
+            },
+            {
+              column: "TIPO",
+              placeholder: "Tipo",
+              options: [
+                { label: "Documento", value: "DOCUMENTO" },
+                { label: "Equipamento", value: "EQUIPAMENTO" },
+                { label: "Benefício", value: "BENEFICIO" },
+                { label: "Treinamento", value: "TREINAMENTO" },
+                { label: "Outros", value: "OUTROS" },
+              ],
+            },
+          ]}
         />
       )}
 

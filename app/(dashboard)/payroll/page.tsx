@@ -192,6 +192,7 @@ export default function PayrollPage() {
     {
       accessorKey: "STATUS_FOLHA",
       header: "Status",
+      filterFn: "equals",
       cell: ({ row }) => <StatusBadge status={row.original.STATUS_FOLHA} />,
     },
     {
@@ -267,6 +268,17 @@ export default function PayrollPage() {
           data={payrolls}
           searchKey="FUNCIONARIO"
           searchPlaceholder="Buscar por funcionário..."
+          filters={[
+            {
+              column: "STATUS_FOLHA",
+              placeholder: "Status",
+              options: [
+                { label: "Pendente", value: "PENDENTE" },
+                { label: "Processado", value: "PROCESSADO" },
+                { label: "Pago", value: "PAGO" },
+              ],
+            },
+          ]}
         />
       )}
 
