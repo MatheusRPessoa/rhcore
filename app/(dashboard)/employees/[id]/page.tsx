@@ -7,7 +7,19 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { employeesApi, vacationsApi, requestsApi, payrollApi } from "@/lib/api";
+import {
+  employeesApi,
+  vacationsApi,
+  requestsApi,
+  payrollApi,
+  benefitsApi,
+} from "@/lib/api";
+import {
+  Benefit,
+  PlanoSaudeMetadata,
+  ValeRefeicaoMetadata,
+  ValeTransporteMetadata,
+} from "@/lib/types";
 
 const MESES = [
   "Janeiro",
@@ -23,6 +35,43 @@ const MESES = [
   "Novembro",
   "Dezembro",
 ];
+
+const BENEFIT_TYPE_LABELS: Record<string, string> = {
+  VALE_TRANSPORTE: "Vale Transporte",
+  VALE_REFEICAO: "Vale Refeição",
+  PLANO_SAUDE: "Plano de Saúde",
+  OUTROS: "Outros",
+};
+
+function renderBenefitDetails(benefit: Benefit): string {
+  if (benefit.TIPO === "OUTROS") {
+    return benefit.DESCRICAO || "—";
+  }
+  if (!benefit.METADADOS) return "—";
+  if (benefit.TIPO === "VALE_TRANSPORTE") {
+    const m = benefit.METADADOS as ValeTransporteMetadata;
+    return `${formatCurrency(m.VALOR_PASSAGEM)}/passagem × ${m.QUANTIDADE_DIARIA}/dia × ${m.DIAS_UTEIS} dias`;
+  }
+  if (benefit.TIPO === "VALE_REFEICAO") {
+    const m = benefit.METADADOS as ValeRefeicaoMetadata;
+    return `${formatCurrency(m.VALOR_DIARIO)}/dia × ${m.DIAS_UTEIS} dias`;
+  }
+  if (benefit.TIPO === "PLANO_SAUDE") {
+    const m = benefit.METADADOS as PlanoSaudeMetadata;
+    const planLabel = {
+      INDIVIDUAL: "Individual",
+      FAMILIAR: "Familiar",
+      EMPRESARIAL: "Empresarial",
+    }[m.TIPO_PLANO];
+    const coverageLabel = {
+      BASICO: "Básico",
+      INTERMEDIARIO: "Intermediário",
+      PREMIUM: "Premium",
+    }[m.COBERTURA];
+    return `${m.OPERADORA} · ${planLabel} · ${coverageLabel} · ${m.PERCENTUAL_FUNCIONARIO}% funcionário`;
+  }
+  return "—";
+}
 
 const formatCurrency = (value: string | number) =>
   Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -50,6 +99,12 @@ export default function EmployeeProfilePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
+  const { data: benefitsData } = useQuery({
+    queryKey: ["benefits", id],
+    queryFn: () => benefitsApi.getEmployee(id),
+    staleTime: 0,
+  });
+
   const { data: employeeData, isLoading: loadingEmployee } = useQuery({
     queryKey: ["employees", id],
     queryFn: () => employeesApi.getById(id),
@@ -75,6 +130,7 @@ export default function EmployeeProfilePage() {
   });
 
   const employee = employeeData?.data;
+  const benefits = benefitsData?.data ?? [];
 
   const payrolls = (payrollData?.data || [])
     .filter((p) => (p.FUNCIONARIO?.ID ?? p.FUNCIONARIO_ID) === id)
@@ -393,6 +449,57 @@ export default function EmployeeProfilePage() {
                     <td className="py-2">{formatDate(r.DATA_SOLICITACAO)}</td>
                     <td className="py-2">
                       <StatusBadge status={r.STATUS} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      <div className="rounded-lg border p-6 space-y-4">
+        <h2 className="font-semibold text-base">
+          Benefícios ({benefits.length})
+        </h2>
+        {benefits.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Nenhum benefício encontrado.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 font-medium text-muted-foreground">
+                    Tipo
+                  </th>
+                  <th className="text-left py-2 font-medium text-muted-foreground">
+                    Valor Mensal
+                  </th>
+                  <th className="text-left py-2 font-medium text-muted-foreground">
+                    Detalhes
+                  </th>
+                  <th className="text-left py-2 font-medium text-muted-foreground">
+                    Início
+                  </th>
+                  <th className="text-left py-2 font-medium text-muted-foreground">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {benefits.map((b) => (
+                  <tr key={b.ID} className="border-b last:border-0">
+                    <td className="py-2">
+                      {BENEFIT_TYPE_LABELS[b.TIPO] ?? b.TIPO}
+                    </td>
+                    <td className="py-2">{formatCurrency(b.VALOR)}</td>
+                    <td className="py-2 text-xs text-muted-foreground max-w-xs">
+                      {renderBenefitDetails(b)}
+                    </td>
+                    <td className="py-2">{formatDate(b.DATA_INICIO)}</td>
+                    <td className="py-2">
+                      <StatusBadge status={b.STATUS_BENEFICIO} />
                     </td>
                   </tr>
                 ))}
