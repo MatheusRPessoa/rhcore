@@ -285,6 +285,7 @@ export default function VacationsPage() {
         <DataTable
           columns={visibleColumns}
           data={vacations}
+          exportFilename="ferias"
           searchKey="FUNCIONARIO"
           searchPlaceholder="Buscar por funcionário..."
           filters={[

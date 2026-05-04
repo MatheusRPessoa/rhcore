@@ -266,6 +266,7 @@ export default function PayrollPage() {
         <DataTable
           columns={columns}
           data={payrolls}
+          exportFilename="folha-de-pagamento"
           searchKey="FUNCIONARIO"
           searchPlaceholder="Buscar por funcionário..."
           filters={[
