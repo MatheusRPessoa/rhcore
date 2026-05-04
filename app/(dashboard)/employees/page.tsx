@@ -219,6 +219,7 @@ export default function EmployeesPage() {
         <DataTable
           columns={columns}
           data={employees}
+          exportFilename="funcionarios"
           searchKey="NOME"
           searchPlaceholder="Buscar por nome..."
           filters={[

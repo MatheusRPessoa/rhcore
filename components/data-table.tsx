@@ -42,6 +42,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Columns3,
+  Download,
   Search,
   X,
 } from "lucide-react";
@@ -58,6 +59,7 @@ interface DataTableProps<TData, TValue> {
   searchKey?: string;
   searchPlaceholder?: string;
   filters?: FilterConfig[];
+  exportFilename?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -66,6 +68,7 @@ export function DataTable<TData, TValue>({
   searchKey,
   searchPlaceholder = "Buscar...",
   filters,
+  exportFilename,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -91,6 +94,41 @@ export function DataTable<TData, TValue>({
       rowSelection,
     },
   });
+
+  function exportToCSV() {
+    const exportableCols = table
+      .getAllColumns()
+      .filter(
+        (col) =>
+          col.getIsVisible() &&
+          ("accessorKey" in col.columnDef || "accessorFn" in col.columnDef),
+      );
+
+    const headers = exportableCols.map((col) =>
+      typeof col.columnDef.header === "string" ? col.columnDef.header : col.id,
+    );
+
+    const rows = table.getFilteredRowModel().rows.map((row) =>
+      exportableCols.map((col) => {
+        const val = row.getValue(col.id);
+        return val == null ? "" : String(val);
+      }),
+    );
+
+    const csv = [headers, ...rows]
+      .map((r) => r.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob(["\uFEFF" + csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${exportFilename ?? "export"}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div className="space-y-4">
@@ -150,7 +188,12 @@ export function DataTable<TData, TValue>({
             </Button>
           )}
         </div>
-
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={exportToCSV}>
+            <Download className="mr-2 h-4 w-4" />
+            Exportar CSV
+          </Button>
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
