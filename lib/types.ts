@@ -137,6 +137,13 @@ export type VacationStatus =
   | "REJEITADO"
   | "CANCELADO";
 
+export const VACATION_STATUS = [
+  "PENDENTE",
+  "APROVADO",
+  "REJEITADO",
+  "CANCELADO",
+] as const satisfies VacationStatus[];
+
 export interface Vacation {
   ID: string;
   FUNCIONARIO_ID: string;
