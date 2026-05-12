@@ -27,14 +27,19 @@ import {
   XCircle,
 } from "lucide-react";
 import { vacationsApi } from "@/lib/api";
-import type {
-  Vacation,
-  CreateVacationData,
-  UpdateVacationData,
-  VacationStatus,
+import {
+  type Vacation,
+  type CreateVacationData,
+  type UpdateVacationData,
+  type VacationStatus,
+  VACATION_STATUS,
 } from "@/lib/types";
 import { useAuth } from "@/contexts/auth-context";
 
+type DialogState = {
+  type: "delete" | "approve" | "reject";
+  vacation: Vacation;
+} | null;
 export default function VacationsPage() {
   const { user, role, hasAppPermission } = useAuth();
   const queryClient = useQueryClient();
@@ -42,23 +47,11 @@ export default function VacationsPage() {
   const [selectedVacation, setSelectedVacation] = useState<
     Vacation | undefined
   >();
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [vacationToDelete, setVacationToDelete] = useState<Vacation | null>(
-    null,
-  );
-  const [isApproveOpen, setIsApproveOpen] = useState(false);
-  const [vacationToApprove, setVacationToApprove] = useState<Vacation | null>(
-    null,
-  );
-  const [isRejectOpen, setIsRejectOpen] = useState(false);
-  const [vacationToReject, setVacationToReject] = useState<Vacation | null>(
-    null,
-  );
-
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["vacations"],
     queryFn: () => vacationsApi.getAll(),
   });
+  const [dialog, setDialog] = useState<DialogState>(null);
 
   const createMutation = useMutation({
     mutationFn: (data: CreateVacationData) => vacationsApi.create(data),
@@ -73,13 +66,17 @@ export default function VacationsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateVacationData }) =>
-      vacationsApi.update(id, data),
-    onSuccess: () => {
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: UpdateVacationData;
+      onSuccess: () => void;
+    }) => vacationsApi.update(id, data),
+    onSuccess: (_, { onSuccess }) => {
       queryClient.invalidateQueries({ queryKey: ["vacations"] });
-      setIsFormOpen(false);
-      setSelectedVacation(undefined);
-      toast.success("Férias atualizadas com sucesso!");
+      onSuccess();
     },
     onError: (error: { message?: string }) => {
       toast.error(error.message ?? "Erro ao atualizar férias");
@@ -90,40 +87,11 @@ export default function VacationsPage() {
     mutationFn: (id: string) => vacationsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vacations"] });
-      setIsDeleteOpen(false);
-      setVacationToDelete(null);
+      setDialog(null);
       toast.success("Férias excluídas com sucesso!");
     },
     onError: (error: { message?: string }) => {
       toast.error(error.message ?? "Erro ao excluir férias");
-    },
-  });
-
-  const approveMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateVacationData }) =>
-      vacationsApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["vacations"] });
-      setIsApproveOpen(false);
-      setVacationToApprove(null);
-      toast.success("Férias aprovadas com sucesso!");
-    },
-    onError: (error: { message?: string }) => {
-      toast.error(error.message ?? "Erro ao aprovar férias");
-    },
-  });
-
-  const rejectMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateVacationData }) =>
-      vacationsApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["vacations"] });
-      setIsRejectOpen(false);
-      setVacationToReject(null);
-      toast.success("Férias rejeitadas.");
-    },
-    onError: (error: { message?: string }) => {
-      toast.error(error.message ?? "Erro ao rejeitar férias");
     },
   });
 
@@ -134,7 +102,12 @@ export default function VacationsPage() {
       if (selectedVacation) {
         await updateMutation.mutateAsync({
           id: selectedVacation.ID,
-          data: formData,
+          data: formData as UpdateVacationData,
+          onSuccess: () => {
+            setIsFormOpen(false);
+            setSelectedVacation(undefined);
+            toast.success("Férias atualizadas com sucesso!");
+          },
         });
       } else {
         await createMutation.mutateAsync(formData as CreateVacationData);
@@ -154,20 +127,14 @@ export default function VacationsPage() {
     setIsFormOpen(true);
   };
 
-  const openDeleteDialog = (vacation: Vacation) => {
-    setVacationToDelete(vacation);
-    setIsDeleteOpen(true);
-  };
+  const openDeleteDialog = (vacation: Vacation) =>
+    setDialog({ type: "delete", vacation });
 
-  const openApproveDialog = (vacation: Vacation) => {
-    setVacationToApprove(vacation);
-    setIsApproveOpen(true);
-  };
+  const openApproveDialog = (vacation: Vacation) =>
+    setDialog({ type: "approve", vacation });
 
-  const openRejectDialog = (vacation: Vacation) => {
-    setVacationToReject(vacation);
-    setIsRejectOpen(true);
-  };
+  const openRejectDialog = (vacation: Vacation) =>
+    setDialog({ type: "reject", vacation });
 
   const columns: ColumnDef<Vacation>[] = [
     {
@@ -223,11 +190,15 @@ export default function VacationsPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => openEditForm(vacation)}>
+              <DropdownMenuItem
+                data-testid={`edit-vacation-${vacation.ID}`}
+                onClick={() => openEditForm(vacation)}
+              >
                 <Pencil className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
               <DropdownMenuItem
+                data-testid={`delete-vacation-${vacation.ID}`}
                 onClick={() => openDeleteDialog(vacation)}
                 className="text-destructive"
               >
@@ -236,6 +207,7 @@ export default function VacationsPage() {
               </DropdownMenuItem>
               {canApprove && (
                 <DropdownMenuItem
+                  data-testid={`approve-vacation-${vacation.ID}`}
                   onClick={() => openApproveDialog(vacation)}
                   className="text-green-600"
                 >
@@ -245,6 +217,7 @@ export default function VacationsPage() {
               )}
               {canApprove && (
                 <DropdownMenuItem
+                  data-testid={`reject-vacation-${vacation.ID}`}
                   onClick={() => openRejectDialog(vacation)}
                   className="text-destructive"
                 >
@@ -258,9 +231,7 @@ export default function VacationsPage() {
       },
     },
   ];
-  const visibleColumns = hasAppPermission("APPROVE_VACATIONS")
-    ? columns
-    : columns.filter((col) => col.id !== "actions");
+  const visibleColumns = columns;
 
   const vacations = data?.data || [];
 
@@ -281,6 +252,10 @@ export default function VacationsPage() {
           <Skeleton className="h-10 w-full max-w-sm" />
           <Skeleton className="h-[400px] w-full" />
         </div>
+      ) : isError ? (
+        <p className="text-sm text-descructive">
+          Erro ao carregar férias. Tente novamente.
+        </p>
       ) : (
         <DataTable
           columns={visibleColumns}
@@ -292,12 +267,10 @@ export default function VacationsPage() {
             {
               column: "STATUS_FERIAS",
               placeholder: "Status",
-              options: [
-                { label: "Pendente", value: "PENDENTE" },
-                { label: "Aprovado", value: "APROVADO" },
-                { label: "Rejeitado", value: "REJEITADO" },
-                { label: "Cancelado", value: "CANCELADO" },
-              ],
+              options: VACATION_STATUS.map((s) => ({
+                label: s.charAt(0) + s.slice(1).toLowerCase(),
+                value: s,
+              })),
             },
           ]}
         />
@@ -326,55 +299,59 @@ export default function VacationsPage() {
       </FormModal>
 
       <ConfirmDialog
-        open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
+        open={dialog?.type === "delete"}
+        onOpenChange={(open) => !open && setDialog(null)}
         title="Excluir Férias"
-        description={`Tem certeza que deseja excluir esta solicitação de férias de "${vacationToDelete?.FUNCIONARIO?.NOME}"? Esta ação não pode ser desfeita.`}
-        onConfirm={() =>
-          vacationToDelete && deleteMutation.mutate(vacationToDelete.ID)
-        }
+        description={`Tem certeza que deseja excluir esta solicitação de férias de "${dialog?.vacation?.FUNCIONARIO?.NOME}"? Esta ação não pode ser desfeita.`}
+        onConfirm={() => dialog && deleteMutation.mutate(dialog.vacation.ID)}
         isLoading={deleteMutation.isPending}
         confirmText="Excluir"
       />
 
       <ConfirmDialog
-        open={isApproveOpen}
-        onOpenChange={setIsApproveOpen}
+        open={dialog?.type === "approve"}
+        onOpenChange={(open) => !open && setDialog(null)}
         title="Aprovar Férias"
-        description={`Tem certeza que deseja aprovar esta solicitação de férias de "${vacationToApprove?.FUNCIONARIO?.NOME}"?`}
+        description={`Tem certeza que deseja aprovar esta solicitação de férias de "${dialog?.vacation?.FUNCIONARIO?.NOME}"?`}
         onConfirm={() =>
-          vacationToApprove &&
-          approveMutation.mutate({
-            id: vacationToApprove.ID,
+          dialog &&
+          updateMutation.mutate({
+            id: dialog.vacation.ID,
             data: {
-              STATUS_FERIAS: "APROVADO" as VacationStatus,
+              STATUS_FERIAS: "APROVADO",
               DATA_APROVACAO: new Date().toISOString(),
               APROVADO_POR_ID: user?.ID,
             },
+            onSuccess: () => {
+              setDialog(null);
+              toast.success("Férias aprovadas com sucesso!");
+            },
           })
         }
-        isLoading={approveMutation.isPending}
+        isLoading={updateMutation.isPending}
         confirmText="Aprovar"
         variant="default"
       />
       <ConfirmDialog
-        open={isRejectOpen}
-        onOpenChange={setIsRejectOpen}
+        open={dialog?.type === "reject"}
+        onOpenChange={(open) => !open && setDialog(null)}
         title="Rejeitar Férias"
-        description={`Tem certeza que deseja rejeitar esta solicitação de férias 
-        de "${vacationToReject?.FUNCIONARIO?.NOME}"?`}
+        description={`Tem certeza que deseja rejeitar esta solicitação de férias de "${dialog?.vacation?.FUNCIONARIO?.NOME}"?`}
         onConfirm={() =>
-          vacationToReject &&
-          rejectMutation.mutate({
-            id: vacationToReject.ID,
+          dialog &&
+          updateMutation.mutate({
+            id: dialog.vacation.ID,
             data: {
-              STATUS_FERIAS: "REJEITADO" as VacationStatus,
-              DATA_APROVACAO: new Date().toISOString(),
+              STATUS_FERIAS: "REJEITADO",
               APROVADO_POR_ID: user?.ID,
+            },
+            onSuccess: () => {
+              setDialog(null);
+              toast.success("Férias aprovadas com sucesso!");
             },
           })
         }
-        isLoading={rejectMutation.isPending}
+        isLoading={updateMutation.isPending}
         confirmText="Rejeitar"
       />
     </div>
