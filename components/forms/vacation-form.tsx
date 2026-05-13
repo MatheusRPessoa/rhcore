@@ -26,14 +26,20 @@ import type {
   Vacation,
   CreateVacationData,
   UpdateVacationData,
+  UserRole,
 } from "@/lib/types";
 
-const vacationSchema = z.object({
-  FUNCIONARIO_ID: z.string().min(1, "Funcionário é obrigatório"),
-  DATA_INICIO: z.string().min(1, "Data de início é obrigatória"),
-  DATA_FIM: z.string().min(1, "Data de fim é obrigatória"),
-  OBSERVACAO: z.string().max(500, "Máximo de 500 caracteres").optional(),
-});
+const vacationSchema = z
+  .object({
+    FUNCIONARIO_ID: z.string().min(1, "Funcionário é obrigatório"),
+    DATA_INICIO: z.string().min(1, "Data de início é obrigatória"),
+    DATA_FIM: z.string().min(1, "Data de fim é obrigatória"),
+    OBSERVACAO: z.string().max(500, "Máximo de 500 caracteres").optional(),
+  })
+  .refine((data) => data.DATA_FIM >= data.DATA_INICIO, {
+    message: "Data de fim deve ser igual ou posterior à data de início",
+    path: ["DATA_FIM"],
+  });
 
 type VacationFormData = z.infer<typeof vacationSchema>;
 
@@ -42,7 +48,7 @@ interface VacationFormProps {
   onSubmit: (data: CreateVacationData | UpdateVacationData) => Promise<void>;
   isSubmitting: boolean;
   onCancel: () => void;
-  role?: string;
+  role?: UserRole;
   employeeId?: string;
 }
 
@@ -56,7 +62,7 @@ export function VacationForm({
 }: VacationFormProps) {
   const isEmployee = role === "EMPLOYEE";
 
-  const { data: employeesData } = useQuery({
+  const { data: employeesData, isLoading: isLoadingEmployees } = useQuery({
     queryKey: ["employees"],
     queryFn: () => employeesApi.getAll(),
     enabled: !isEmployee,
@@ -108,13 +114,21 @@ export function VacationForm({
       <FieldGroup>
         {!isEmployee && (
           <Field>
-            <FieldLabel>Funcionário *</FieldLabel>
+            <FieldLabel htmlFor="FUNCIONARIO_ID">Funcionário *</FieldLabel>
             <Select
               value={funcionarioId}
-              onValueChange={(value) => setValue("FUNCIONARIO_ID", value)}
+              onValueChange={(value) =>
+                setValue("FUNCIONARIO_ID", value, { shouldValidate: true })
+              }
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um funcionário..." />
+              <SelectTrigger id="FUNCIONARIO_ID" disabled={isLoadingEmployees}>
+                <SelectValue
+                  placeholder={
+                    isLoadingEmployees
+                      ? "Carregando..."
+                      : "Selecione um funcionário..."
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 {employees.map((emp) => (

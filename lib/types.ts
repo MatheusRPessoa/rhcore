@@ -131,11 +131,21 @@ export interface UpdatePositionData extends Partial<CreatePositionData> {
   STATUS?: "ATIVO" | "INATIVO";
 }
 
-export type VacationStatus =
-  | "PENDENTE"
-  | "APROVADO"
-  | "REJEITADO"
-  | "CANCELADO";
+export const VACATION_STATUS = [
+  "PENDENTE",
+  "APROVADO",
+  "REJEITADO",
+  "CANCELADO",
+] as const;
+
+export type VacationStatus = (typeof VACATION_STATUS)[number];
+
+export const VACATION_STATUS_LABELS: Record<VacationStatus, string> = {
+  PENDENTE: "Pendente",
+  APROVADO: "Aprovado",
+  REJEITADO: "Rejeitado",
+  CANCELADO: "Cancelado",
+};
 
 export interface Vacation {
   ID: string;
