@@ -33,6 +33,7 @@ import {
   type UpdateVacationData,
   type VacationStatus,
   VACATION_STATUS,
+  VACATION_STATUS_LABELS,
 } from "@/lib/types";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -47,11 +48,12 @@ export default function VacationsPage() {
   const [selectedVacation, setSelectedVacation] = useState<
     Vacation | undefined
   >();
+  const [dialog, setDialog] = useState<DialogState>(null);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["vacations"],
     queryFn: () => vacationsApi.getAll(),
   });
-  const [dialog, setDialog] = useState<DialogState>(null);
 
   const createMutation = useMutation({
     mutationFn: (data: CreateVacationData) => vacationsApi.create(data),
@@ -66,17 +68,10 @@ export default function VacationsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: UpdateVacationData;
-      onSuccess: () => void;
-    }) => vacationsApi.update(id, data),
-    onSuccess: (_, { onSuccess }) => {
+    mutationFn: ({ id, data }: { id: string; data: UpdateVacationData }) =>
+      vacationsApi.update(id, data),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vacations"] });
-      onSuccess();
     },
     onError: (error: { message?: string }) => {
       toast.error(error.message ?? "Erro ao atualizar férias");
@@ -100,15 +95,16 @@ export default function VacationsPage() {
   ) => {
     try {
       if (selectedVacation) {
-        await updateMutation.mutateAsync({
-          id: selectedVacation.ID,
-          data: formData as UpdateVacationData,
-          onSuccess: () => {
-            setIsFormOpen(false);
-            setSelectedVacation(undefined);
-            toast.success("Férias atualizadas com sucesso!");
+        await updateMutation.mutateAsync(
+          { id: selectedVacation.ID, data: formData as UpdateVacationData },
+          {
+            onSuccess: () => {
+              setIsFormOpen(false);
+              setSelectedVacation(undefined);
+              toast.success("Férias atualizadas com sucesso!");
+            },
           },
-        });
+        );
       } else {
         await createMutation.mutateAsync(formData as CreateVacationData);
       }
@@ -253,7 +249,7 @@ export default function VacationsPage() {
           <Skeleton className="h-[400px] w-full" />
         </div>
       ) : isError ? (
-        <p className="text-sm text-descructive">
+        <p className="text-sm text-destructive">
           Erro ao carregar férias. Tente novamente.
         </p>
       ) : (
@@ -268,7 +264,7 @@ export default function VacationsPage() {
               column: "STATUS_FERIAS",
               placeholder: "Status",
               options: VACATION_STATUS.map((s) => ({
-                label: s.charAt(0) + s.slice(1).toLowerCase(),
+                label: VACATION_STATUS_LABELS[s],
                 value: s,
               })),
             },
@@ -315,18 +311,22 @@ export default function VacationsPage() {
         description={`Tem certeza que deseja aprovar esta solicitação de férias de "${dialog?.vacation?.FUNCIONARIO?.NOME}"?`}
         onConfirm={() =>
           dialog &&
-          updateMutation.mutate({
-            id: dialog.vacation.ID,
-            data: {
-              STATUS_FERIAS: "APROVADO",
-              DATA_APROVACAO: new Date().toISOString(),
-              APROVADO_POR_ID: user?.ID,
+          updateMutation.mutate(
+            {
+              id: dialog.vacation.ID,
+              data: {
+                STATUS_FERIAS: "APROVADO",
+                DATA_APROVACAO: new Date().toISOString(),
+                APROVADO_POR_ID: user?.ID,
+              },
             },
-            onSuccess: () => {
-              setDialog(null);
-              toast.success("Férias aprovadas com sucesso!");
+            {
+              onSuccess: () => {
+                setDialog(null);
+                toast.success("Férias aprovadas com sucesso!");
+              },
             },
-          })
+          )
         }
         isLoading={updateMutation.isPending}
         confirmText="Aprovar"
@@ -339,17 +339,18 @@ export default function VacationsPage() {
         description={`Tem certeza que deseja rejeitar esta solicitação de férias de "${dialog?.vacation?.FUNCIONARIO?.NOME}"?`}
         onConfirm={() =>
           dialog &&
-          updateMutation.mutate({
-            id: dialog.vacation.ID,
-            data: {
-              STATUS_FERIAS: "REJEITADO",
-              APROVADO_POR_ID: user?.ID,
+          updateMutation.mutate(
+            {
+              id: dialog.vacation.ID,
+              data: { STATUS_FERIAS: "REJEITADO", APROVADO_POR_ID: user?.ID },
             },
-            onSuccess: () => {
-              setDialog(null);
-              toast.success("Férias aprovadas com sucesso!");
+            {
+              onSuccess: () => {
+                setDialog(null);
+                toast.success("Férias rejeitadas.");
+              },
             },
-          })
+          )
         }
         isLoading={updateMutation.isPending}
         confirmText="Rejeitar"
