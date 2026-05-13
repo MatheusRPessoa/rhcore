@@ -30,6 +30,7 @@ import type {
   AppPermission,
 } from "@/lib/types";
 import { Checkbox } from "../ui/checkbox";
+import { useMemo } from "react";
 
 const ALL_PERMISSIONS: { value: AppPermission; label: string }[] = [
   { value: "APPROVE_VACATIONS", label: "Aprovar férias" },
@@ -41,6 +42,7 @@ const ALL_PERMISSIONS: { value: AppPermission; label: string }[] = [
 
 const userSchema = z.object({
   NOME_USUARIO: z.string().min(1, "O Nome do usuário é obrigatório"),
+  EMAIL: z.string().email("E-mail inválido"),
   SENHA: z
     .string()
     .min(6, "Senha deve ter no mínimo 6 caracteres")
@@ -49,7 +51,17 @@ const userSchema = z.object({
   STATUS: z.enum(["ATIVO", "INATIVO"]).optional(),
   ROLE: z.enum(["ADMIN", "MANAGER", "EMPLOYEE"]),
   FUNCIONARIO_ID: z.string().optional(),
-  PERMISSIONS: z.array(z.string()).optional(),
+  PERMISSIONS: z
+    .array(
+      z.enum([
+        "APPROVE_VACATIONS",
+        "APPROVE_REQUESTS",
+        "VIEW_ALL_EMPLOYEES",
+        "MANAGE_PAYROLL",
+        "VIEW_REPORTS",
+      ]),
+    )
+    .optional(),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -61,12 +73,28 @@ interface UserFormProps {
   onCancel: () => void;
 }
 
+const editSchema = userSchema.extend({
+  SENHA: z
+    .string()
+    .min(6, "A senha deve ter no mínimo 6 caracteres")
+    .optional()
+    .or(z.literal("")),
+});
+const createSchema = userSchema.extend({
+  SENHA: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+});
+
 export function UserForm({
   user,
   onSubmit,
   isSubmitting,
   onCancel,
 }: UserFormProps) {
+  const resolver = useMemo(
+    () => zodResolver(user ? editSchema : createSchema),
+    [user],
+  );
+
   const {
     register,
     handleSubmit,
@@ -74,19 +102,7 @@ export function UserForm({
     control,
     formState: { errors },
   } = useForm<UserFormData>({
-    resolver: zodResolver(
-      user
-        ? userSchema.extend({
-            SENHA: z
-              .string()
-              .min(6, "Senha deve ter no mínimo 6 caracteres")
-              .optional()
-              .or(z.literal("")),
-          })
-        : userSchema.extend({
-            SENHA: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
-          }),
-    ),
+    resolver,
     defaultValues: {
       NOME_USUARIO: user?.NOME_USUARIO || "",
       SENHA: "",
@@ -116,7 +132,7 @@ export function UserForm({
         STATUS: formValues.STATUS,
         ROLE: formValues.ROLE,
         FUNCIONARIO_ID: formValues.FUNCIONARIO_ID,
-        PERMISSIONS: formValues.PERMISSIONS as AppPermission[],
+        PERMISSIONS: formValues.PERMISSIONS,
       };
       if (formValues.SENHA) {
         payload.SENHA = formValues.SENHA;
@@ -125,6 +141,7 @@ export function UserForm({
     } else {
       await onSubmit({
         NOME_USUARIO: formValues.NOME_USUARIO,
+        EMAIL: formValues.EMAIL,
         SENHA: formValues.SENHA!,
         ROLE: formValues.ROLE,
         FUNCIONARIO_ID: formValues.FUNCIONARIO_ID,
@@ -147,6 +164,14 @@ export function UserForm({
         </Field>
 
         <Field>
+          <FieldLabel htmlFor="EMAIL">E-mail *</FieldLabel>
+          <Input id="EMAIL" type="email" {...register("EMAIL")} />
+          {errors.EMAIL && (
+            <FieldMessage variant="error">{errors.EMAIL.message}</FieldMessage>
+          )}
+        </Field>
+
+        <Field>
           <FieldLabel htmlFor="SENHA">
             {user ? "Nova Senha (deixe em branco para manter)" : "Senha *"}
           </FieldLabel>
@@ -156,12 +181,14 @@ export function UserForm({
           )}
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field>
             <FieldLabel>Função *</FieldLabel>
             <Select
               value={role}
-              onValueChange={(value) => setValue("ROLE", value as UserRole)}
+              onValueChange={(value) =>
+                setValue("ROLE", value as UserRole, { shouldValidate: true })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -180,7 +207,9 @@ export function UserForm({
               <Select
                 value={status}
                 onValueChange={(value) =>
-                  setValue("STATUS", value as "ATIVO" | "INATIVO")
+                  setValue("STATUS", value as "ATIVO" | "INATIVO", {
+                    shouldValidate: true,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -200,7 +229,9 @@ export function UserForm({
           <Select
             value={funcionarioId || ""}
             onValueChange={(value) =>
-              setValue("FUNCIONARIO_ID", value === "none" ? "" : value)
+              setValue("FUNCIONARIO_ID", value === "none" ? "" : value, {
+                shouldValidate: true,
+              })
             }
           >
             <SelectTrigger>
@@ -222,11 +253,9 @@ export function UserForm({
             <FieldLabel>Permissões adicionais</FieldLabel>
             <div className="flex flex-col gap-2 mt-1">
               {ALL_PERMISSIONS.map((perm) => (
-                <label
-                  key={perm.value}
-                  className="flex items-center gap-2 text-sm cursor-pointer"
-                >
+                <div key={perm.value} className="flex items-center gap-2">
                   <Checkbox
+                    id={`perm-${perm.value}`}
                     checked={permissions.includes(perm.value)}
                     onCheckedChange={(checked) => {
                       setValue(
@@ -237,8 +266,13 @@ export function UserForm({
                       );
                     }}
                   />
-                  {perm.label}
-                </label>
+                  <label
+                    htmlFor={`perm-${perm.value}`}
+                    className="text-sm cursor-pointer"
+                  >
+                    {perm.label}
+                  </label>
+                </div>
               ))}
             </div>
           </Field>

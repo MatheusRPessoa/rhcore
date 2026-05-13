@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
@@ -29,7 +29,7 @@ export default function UsersPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<SystemUser | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["users"],
     queryFn: () => usersApi.getAll(),
   });
@@ -93,77 +93,80 @@ export default function UsersPage() {
     setIsFormOpen(true);
   };
 
-  const openEditForm = (user: SystemUser) => {
+  const openEditForm = useCallback((user: SystemUser) => {
     setSelectedUser(user);
     setIsFormOpen(true);
-  };
+  }, []);
 
-  const openDeleteDialog = (user: SystemUser) => {
+  const openDeleteDialog = useCallback((user: SystemUser) => {
     setUserToDelete(user);
     setIsDeleteOpen(true);
-  };
+  }, []);
 
-  const columns: ColumnDef<SystemUser>[] = [
-    {
-      accessorKey: "NOME_USUARIO",
-      header: "Usuário",
-    },
-    {
-      accessorKey: "STATUS",
-      header: "Status",
-      cell: ({ row }) => <StatusBadge status={row.original.STATUS} />,
-    },
-    {
-      accessorKey: "CRIADO_EM",
-      header: "Criado em",
-      cell: ({ row }) =>
-        new Date(row.original.CRIADO_EM).toLocaleDateString("pt-BR"),
-    },
-    {
-      accessorKey: "ROLE",
-      header: "Função",
-      cell: ({ row }) => {
-        const labels: Record<string, string> = {
-          ADMIN: "Administrador",
-          MANAGER: "Gerente",
-          EMPLOYEE: "Funcionário",
-        };
-        return labels[row.original.ROLE] ?? row.original.ROLE;
+  const columns = useMemo<ColumnDef<SystemUser>[]>(
+    () => [
+      {
+        accessorKey: "NOME_USUARIO",
+        header: "Usuário",
       },
-    },
-    {
-      id: "actions",
-      header: "Ações",
-      cell: ({ row }) => {
-        const user = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Abrir menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => openEditForm(user)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => openDeleteDialog(user)}
-                className="text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
+      {
+        accessorKey: "STATUS",
+        header: "Status",
+        cell: ({ row }) => <StatusBadge status={row.original.STATUS} />,
       },
-    },
-  ];
+      {
+        accessorKey: "CRIADO_EM",
+        header: "Criado em",
+        cell: ({ row }) =>
+          new Date(row.original.CRIADO_EM).toLocaleDateString("pt-BR"),
+      },
+      {
+        accessorKey: "ROLE",
+        header: "Função",
+        cell: ({ row }) => {
+          const labels: Record<string, string> = {
+            ADMIN: "Administrador",
+            MANAGER: "Gerente",
+            EMPLOYEE: "Funcionário",
+          };
+          return labels[row.original.ROLE] ?? row.original.ROLE;
+        },
+      },
+      {
+        id: "actions",
+        header: "Ações",
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Abrir menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => openEditForm(user)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => openDeleteDialog(user)}
+                  className="text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [openEditForm, openDeleteDialog],
+  );
 
-  const users = data?.data || [];
+  const users = data?.data ?? [];
 
   return (
     <div>
@@ -182,6 +185,10 @@ export default function UsersPage() {
           <Skeleton className="h-10 w-full max-w-sm" />
           <Skeleton className="h-[400px] w-full" />
         </div>
+      ) : isError ? (
+        <p className="text-sm text-destructive">
+          Erro ao carregar usuários. Tente novamente
+        </p>
       ) : (
         <DataTable
           columns={columns}
