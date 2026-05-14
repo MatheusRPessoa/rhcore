@@ -90,10 +90,9 @@ export function UserForm({
   isSubmitting,
   onCancel,
 }: UserFormProps) {
-  const isEditMode = !!user;
   const resolver = useMemo(
     () => zodResolver(user ? editSchema : createSchema),
-    [isEditMode],
+    [user],
   );
 
   const {
@@ -125,12 +124,13 @@ export function UserForm({
     queryFn: () => employeesApi.getAll(),
   });
   const employees: Employee[] =
-    employeesData?.data?.filter((e) => e.STATUS === "ATIVO") || [];
+    employeesData?.data?.filter((e) => e.STATUS === "ATIVO") ?? [];
 
   const handleFormSubmit = async (formValues: UserFormData) => {
     if (user) {
       const payload: UpdateUserData = {
         NOME_USUARIO: formValues.NOME_USUARIO,
+        EMAIL: formValues.EMAIL,
         STATUS: formValues.STATUS,
         ROLE: formValues.ROLE,
         FUNCIONARIO_ID: formValues.FUNCIONARIO_ID,
@@ -147,7 +147,7 @@ export function UserForm({
         SENHA: formValues.SENHA!,
         ROLE: formValues.ROLE,
         FUNCIONARIO_ID: formValues.FUNCIONARIO_ID,
-        PERMISSIONS: formValues.PERMISSIONS as AppPermission[],
+        PERMISSIONS: formValues.PERMISSIONS ?? [],
       });
     }
   };
