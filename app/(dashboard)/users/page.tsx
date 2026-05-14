@@ -20,7 +20,18 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { usersApi } from "@/lib/api";
-import type { SystemUser, CreateUserData, UpdateUserData } from "@/lib/types";
+import type {
+  SystemUser,
+  CreateUserData,
+  UpdateUserData,
+  UserRole,
+} from "@/lib/types";
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  ADMIN: "Administrador",
+  MANAGER: "Gerente",
+  EMPLOYEE: "Funcionário",
+};
 
 export default function UsersPage() {
   const queryClient = useQueryClient();
@@ -123,14 +134,7 @@ export default function UsersPage() {
       {
         accessorKey: "ROLE",
         header: "Função",
-        cell: ({ row }) => {
-          const labels: Record<string, string> = {
-            ADMIN: "Administrador",
-            MANAGER: "Gerente",
-            EMPLOYEE: "Funcionário",
-          };
-          return labels[row.original.ROLE] ?? row.original.ROLE;
-        },
+        cell: ({ row }) => ROLE_LABELS[row.original.ROLE] ?? row.original.ROLE,
       },
       {
         id: "actions",

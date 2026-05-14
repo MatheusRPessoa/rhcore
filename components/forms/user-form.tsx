@@ -29,7 +29,7 @@ import type {
   Employee,
   AppPermission,
 } from "@/lib/types";
-import { Checkbox } from "../ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useMemo } from "react";
 
 const ALL_PERMISSIONS: { value: AppPermission; label: string }[] = [
@@ -90,9 +90,10 @@ export function UserForm({
   isSubmitting,
   onCancel,
 }: UserFormProps) {
+  const isEditMode = !!user;
   const resolver = useMemo(
     () => zodResolver(user ? editSchema : createSchema),
-    [user],
+    [isEditMode],
   );
 
   const {
@@ -104,12 +105,13 @@ export function UserForm({
   } = useForm<UserFormData>({
     resolver,
     defaultValues: {
-      NOME_USUARIO: user?.NOME_USUARIO || "",
+      NOME_USUARIO: user?.NOME_USUARIO ?? "",
+      EMAIL: user?.EMAIL ?? "",
       SENHA: "",
-      STATUS: user?.STATUS || "ATIVO",
-      ROLE: user?.ROLE || "EMPLOYEE",
-      FUNCIONARIO_ID: user?.FUNCIONARIO_ID || "",
-      PERMISSIONS: user?.PERMISSIONS || [],
+      STATUS: user?.STATUS ?? "ATIVO",
+      ROLE: user?.ROLE ?? "EMPLOYEE",
+      FUNCIONARIO_ID: user?.FUNCIONARIO_ID ?? "",
+      PERMISSIONS: user?.PERMISSIONS ?? [],
     },
   });
 
