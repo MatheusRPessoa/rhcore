@@ -60,6 +60,7 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string;
   filters?: FilterConfig[];
   exportFilename?: string;
+  emptyMessage?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -69,6 +70,7 @@ export function DataTable<TData, TValue>({
   searchPlaceholder = "Buscar...",
   filters,
   exportFilename,
+  emptyMessage = "Nenhum registro encontrado.",
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -262,7 +264,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  Nenhum registro encontrado.
+                  {emptyMessage}
                 </TableCell>
               </TableRow>
             )}

@@ -202,7 +202,7 @@ export interface HRRequest {
   ATUALIZADO_POR?: string | null;
   FUNCIONARIO?: Employee;
   APROVADO_POR?: SystemUser;
-  STATUS: "ATIVO" | "INATIVO" | "EXCLUIDO" | "PENDENTE";
+  STATUS: "ATIVO" | "INATIVO" | "EXCLUIDO" | "PENDENTE" | "REJEITADO";
 }
 
 export interface CreateRequestData {
@@ -216,7 +216,7 @@ export interface CreateRequestData {
 export interface UpdateRequestData extends Partial<CreateRequestData> {
   DATA_RESPOSTA?: string;
   APROVADO_POR_ID?: string;
-  STATUS?: "ATIVO" | "INATIVO" | "EXCLUIDO" | "PENDENTE";
+  STATUS?: "ATIVO" | "INATIVO" | "EXCLUIDO" | "PENDENTE" | "REJEITADO";
 }
 
 export interface SystemUser {
