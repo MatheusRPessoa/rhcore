@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
@@ -149,10 +149,10 @@ export default function RequestsPage() {
     setIsFormOpen(true);
   };
 
-  const openEditForm = (request: HRRequest) => {
+  const openEditForm = useCallback((request: HRRequest) => {
     setSelectedRequest(request);
     setIsFormOpen(true);
-  };
+  }, []);
 
   const openDeleteDialog = (request: HRRequest) => {
     setRequestToDelete(request);
@@ -274,17 +274,16 @@ export default function RequestsPage() {
         },
       },
     ],
-    [user, hasAppPermission, openEditForm, openDeleteDialog, openRejectDialog],
+    [
+      user,
+      hasAppPermission,
+      openEditForm,
+      openDeleteDialog,
+      openApproveDialog,
+      openRejectDialog,
+    ],
   );
   const requests = data?.data || [];
-
-  const visibleColumns = useMemo(
-    () =>
-      hasAppPermission("APPROVE_REQUESTS")
-        ? columns
-        : columns.filter((col) => col.id !== "actions"),
-    [columns, hasAppPermission],
-  );
 
   return (
     <div>
@@ -305,7 +304,7 @@ export default function RequestsPage() {
         </div>
       ) : (
         <DataTable
-          columns={visibleColumns}
+          columns={columns}
           data={requests}
           searchKey="FUNCIONARIO"
           searchPlaceholder="Buscar por funcionário..."
@@ -323,7 +322,7 @@ export default function RequestsPage() {
             {
               column: "TIPO",
               placeholder: "Tipo",
-              options: [...REQUEST_TYPES],
+              options: REQUEST_TYPES,
             },
           ]}
         />
