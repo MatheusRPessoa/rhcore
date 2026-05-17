@@ -154,20 +154,20 @@ export default function RequestsPage() {
     setIsFormOpen(true);
   }, []);
 
-  const openDeleteDialog = (request: HRRequest) => {
+  const openDeleteDialog = useCallback((request: HRRequest) => {
     setRequestToDelete(request);
     setIsDeleteOpen(true);
-  };
+  }, []);
 
-  const openApproveDialog = (request: HRRequest) => {
+  const openApproveDialog = useCallback((request: HRRequest) => {
     setRequestToApprove(request);
     setIsApproveOpen(true);
-  };
+  }, []);
 
-  const openRejectDialog = (request: HRRequest) => {
+  const openRejectDialog = useCallback((request: HRRequest) => {
     setRequestToReject(request);
     setIsRejectOpen(true);
-  };
+  }, []);
 
   const columns = useMemo<ColumnDef<HRRequest>[]>(
     () => [
