@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
@@ -33,6 +33,7 @@ import type {
   UpdateRequestData,
 } from "@/lib/types";
 import { useAuth } from "@/contexts/auth-context";
+import { REQUEST_TYPES } from "@/lib/constants";
 
 export default function RequestsPage() {
   const { user, role, hasAppPermission } = useAuth();
@@ -112,6 +113,20 @@ export default function RequestsPage() {
     },
   });
 
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateRequestData }) =>
+      requestsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["requests"] });
+      setIsRejectOpen(false);
+      setRequestToReject(null);
+      toast.success("Solicitação rejeitada.");
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message ?? "Erro ao rejeitar solicitação");
+    },
+  });
+
   const handleSubmit = async (
     formData: CreateRequestData | UpdateRequestData,
   ) => {
@@ -149,128 +164,127 @@ export default function RequestsPage() {
     setIsApproveOpen(true);
   };
 
-  const rejectMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateRequestData }) =>
-      requestsApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["requests"] });
-      setIsRejectOpen(false);
-      setRequestToReject(null);
-      toast.success("Solicitação rejeitada.");
-    },
-    onError: (error: { message?: string }) => {
-      toast.error(error.message ?? "Erro ao rejeitar solicitação");
-    },
-  });
-
   const openRejectDialog = (request: HRRequest) => {
     setRequestToReject(request);
     setIsRejectOpen(true);
   };
 
-  const columns: ColumnDef<HRRequest>[] = [
-    {
-      accessorKey: "FUNCIONARIO",
-      header: "Funcionário",
-      cell: ({ row }) => row.original.FUNCIONARIO?.NOME || "-",
-    },
-    {
-      accessorKey: "TIPO",
-      header: "Tipo",
-      filterFn: "equals",
-      cell: ({ row }) => <StatusBadge status={row.original.TIPO} />,
-    },
-    {
-      accessorKey: "DESCRICAO",
-      header: "Descrição",
-      cell: ({ row }) => (
-        <span className="truncate max-w-[200px] block">
-          {row.original.DESCRICAO}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "STATUS",
-      header: "Status",
-      filterFn: "equals",
-      cell: ({ row }) => <StatusBadge status={row.original.STATUS} />,
-    },
-    {
-      accessorKey: "DATA_SOLICITACAO",
-      header: "Data Solicitação",
-      cell: ({ row }) =>
-        new Date(row.original.DATA_SOLICITACAO).toLocaleDateString("pt-BR"),
-    },
-    {
-      accessorKey: "DATA_RESPOSTA",
-      header: "Data Resposta",
-      cell: ({ row }) =>
-        row.original.DATA_RESPOSTA
-          ? new Date(row.original.DATA_RESPOSTA).toLocaleDateString("pt-BR")
-          : "-",
-    },
-    {
-      accessorKey: "APROVADO_POR",
-      header: "Aprovado Por",
-      cell: ({ row }) => row.original.APROVADO_POR?.NOME_USUARIO || "-",
-    },
-    {
-      id: "actions",
-      header: "Ações",
-      cell: ({ row }) => {
-        const request = row.original;
-        const isOwnRequest = request.FUNCIONARIO_ID === user?.FUNCIONARIO_ID;
-        const canApprove =
-          hasAppPermission("APPROVE_REQUESTS") && !isOwnRequest;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Abrir menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => openEditForm(request)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => openDeleteDialog(request)}
-                className="text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
-              </DropdownMenuItem>
-              {canApprove && (
-                <DropdownMenuItem
-                  onClick={() => openApproveDialog(request)}
-                  className="text-green-500"
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  Aprovar
-                </DropdownMenuItem>
-              )}
-              {canApprove && (
-                <DropdownMenuItem
-                  onClick={() => openRejectDialog(request)}
-                  className="text-destructive"
-                >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Rejeitar
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
+  const columns = useMemo<ColumnDef<HRRequest>[]>(
+    () => [
+      {
+        accessorKey: "FUNCIONARIO",
+        header: "Funcionário",
+        cell: ({ row }) => row.original.FUNCIONARIO?.NOME || "-",
       },
-    },
-  ];
+      {
+        accessorKey: "TIPO",
+        header: "Tipo",
+        filterFn: "equals",
+        cell: ({ row }) => <StatusBadge status={row.original.TIPO} />,
+      },
+      {
+        accessorKey: "DESCRICAO",
+        header: "Descrição",
+        cell: ({ row }) => (
+          <span className="truncate max-w-[200px] block">
+            {row.original.DESCRICAO}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "STATUS",
+        header: "Status",
+        filterFn: "equals",
+        cell: ({ row }) => <StatusBadge status={row.original.STATUS} />,
+      },
+      {
+        accessorKey: "DATA_SOLICITACAO",
+        header: "Data Solicitação",
+        cell: ({ row }) =>
+          new Date(row.original.DATA_SOLICITACAO).toLocaleDateString("pt-BR"),
+      },
+      {
+        accessorKey: "DATA_RESPOSTA",
+        header: "Data Resposta",
+        cell: ({ row }) =>
+          row.original.DATA_RESPOSTA
+            ? new Date(row.original.DATA_RESPOSTA).toLocaleDateString("pt-BR")
+            : "-",
+      },
+      {
+        accessorKey: "APROVADO_POR",
+        header: "Aprovado Por",
+        cell: ({ row }) => row.original.APROVADO_POR?.NOME_USUARIO || "-",
+      },
+      {
+        id: "actions",
+        header: "Ações",
+        cell: ({ row }) => {
+          const request = row.original;
+          const isOwnRequest = request.FUNCIONARIO_ID === user?.FUNCIONARIO_ID;
+          const canManageOwn =
+            isOwnRequest || hasAppPermission("APPROVE_REQUESTS");
+          const canApprove =
+            hasAppPermission("APPROVE_REQUESTS") && !isOwnRequest;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Abrir menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {canManageOwn && (
+                  <DropdownMenuItem onClick={() => openEditForm(request)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Editar
+                  </DropdownMenuItem>
+                )}
+                {canManageOwn && (
+                  <DropdownMenuItem
+                    onClick={() => openDeleteDialog(request)}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Excluir
+                  </DropdownMenuItem>
+                )}
+                {canApprove && (
+                  <DropdownMenuItem
+                    onClick={() => openApproveDialog(request)}
+                    className="text-green-500"
+                  >
+                    <Check className="mr-2 h-4 w-4" />
+                    Aprovar
+                  </DropdownMenuItem>
+                )}
+                {canApprove && (
+                  <DropdownMenuItem
+                    onClick={() => openRejectDialog(request)}
+                    className="text-destructive"
+                  >
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Rejeitar
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [user, hasAppPermission, openEditForm, openDeleteDialog, openRejectDialog],
+  );
   const requests = data?.data || [];
 
-  const visibleColumns = hasAppPermission("APPROVE_REQUESTS")
-    ? columns
-    : columns.filter((col) => col.id !== "actions");
+  const visibleColumns = useMemo(
+    () =>
+      hasAppPermission("APPROVE_REQUESTS")
+        ? columns
+        : columns.filter((col) => col.id !== "actions"),
+    [columns, hasAppPermission],
+  );
 
   return (
     <div>
@@ -295,6 +309,7 @@ export default function RequestsPage() {
           data={requests}
           searchKey="FUNCIONARIO"
           searchPlaceholder="Buscar por funcionário..."
+          emptyMessage="Nenhuma solicitação encontrada."
           filters={[
             {
               column: "STATUS",
@@ -302,19 +317,13 @@ export default function RequestsPage() {
               options: [
                 { label: "Pendente", value: "PENDENTE" },
                 { label: "Ativo", value: "ATIVO" },
-                { label: "Inativo", value: "INATIVO" },
+                { label: "Rejeitado", value: "REJEITADO" },
               ],
             },
             {
               column: "TIPO",
               placeholder: "Tipo",
-              options: [
-                { label: "Documento", value: "DOCUMENTO" },
-                { label: "Equipamento", value: "EQUIPAMENTO" },
-                { label: "Benefício", value: "BENEFICIO" },
-                { label: "Treinamento", value: "TREINAMENTO" },
-                { label: "Outros", value: "OUTROS" },
-              ],
+              options: [...REQUEST_TYPES],
             },
           ]}
         />
@@ -375,7 +384,7 @@ export default function RequestsPage() {
           rejectMutation.mutate({
             id: requestToReject.ID,
             data: {
-              STATUS: "INATIVO",
+              STATUS: "REJEITADO",
               DATA_RESPOSTA: new Date().toISOString(),
               APROVADO_POR_ID: user?.ID,
             },
