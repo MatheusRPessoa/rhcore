@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { REQUEST_TYPES } from "@/lib/constants";
 import {
   Field,
   FieldGroup,
@@ -27,6 +28,7 @@ import type {
   CreateRequestData,
   UpdateRequestData,
   RequestType,
+  UserRole,
 } from "@/lib/types";
 
 const requestSchema = z.object({
@@ -42,7 +44,10 @@ const requestSchema = z.object({
     .string()
     .min(1, "Descrição é obrigatória")
     .max(500, "Máximo de 500 caracteres"),
-  DATA_SOLICITACAO: z.string().min(1, "Data de solicitação é obrigatória"),
+  DATA_SOLICITACAO: z
+    .string()
+    .min(1, "Data de solicitação é obrigatória")
+    .refine((v) => !isNaN(Date.parse(v)), "Data inválida"),
   OBSERVACAO: z.string().max(500, "Máximo de 500 caracteres").optional(),
   DATA_RESPOSTA: z.string().optional(),
 });
@@ -54,17 +59,9 @@ interface RequestFormProps {
   onSubmit: (data: CreateRequestData | UpdateRequestData) => Promise<void>;
   isSubmitting: boolean;
   onCancel: () => void;
-  role?: string;
+  role?: UserRole;
   employeeId?: string;
 }
-
-const requestTypes = [
-  { value: "DOCUMENTO", label: "Documento" },
-  { value: "EQUIPAMENTO", label: "Equipamento" },
-  { value: "BENEFICIO", label: "Benefício" },
-  { value: "TREINAMENTO", label: "Treinamento" },
-  { value: "OUTROS", label: "Outros" },
-];
 
 export function RequestForm({
   request,
@@ -134,12 +131,12 @@ export function RequestForm({
       <FieldGroup>
         {!isEmployee && (
           <Field>
-            <FieldLabel>Funcionário *</FieldLabel>
+            <FieldLabel htmlFor="FUNCIONARIO_ID">Funcionário *</FieldLabel>
             <Select
               value={funcionarioId}
               onValueChange={(value) => setValue("FUNCIONARIO_ID", value)}
             >
-              <SelectTrigger>
+              <SelectTrigger id="FUNCIONARIO_ID">
                 <SelectValue placeholder="Selecione um funcionário..." />
               </SelectTrigger>
               <SelectContent>
@@ -159,16 +156,16 @@ export function RequestForm({
         )}
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel>Tipo *</FieldLabel>
+            <FieldLabel htmlFor="TIPO">Tipo *</FieldLabel>
             <Select
               value={tipo}
               onValueChange={(value) => setValue("TIPO", value as RequestType)}
             >
-              <SelectTrigger>
+              <SelectTrigger id="TIPO">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {requestTypes.map((type) => (
+                {REQUEST_TYPES.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
                     {type.label}
                   </SelectItem>
@@ -230,16 +227,14 @@ export function RequestForm({
         </Field>
 
         {request && (
-          <div className="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel htmlFor="DATA_RESPOSTA">Data de Resposta</FieldLabel>
-              <Input
-                id="DATA_RESPOSTA"
-                type="date"
-                {...register("DATA_RESPOSTA")}
-              />
-            </Field>
-          </div>
+          <Field>
+            <FieldLabel htmlFor="DATA_RESPOSTA">Data de Resposta</FieldLabel>
+            <Input
+              id="DATA_RESPOSTA"
+              type="date"
+              {...register("DATA_RESPOSTA")}
+            />
+          </Field>
         )}
 
         <div className="flex justify-end gap-2 pt-4">
