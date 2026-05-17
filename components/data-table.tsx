@@ -60,7 +60,7 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string;
   filters?: FilterConfig[];
   exportFilename?: string;
-  emptyMessage: string;
+  emptyMessage?: string;
 }
 
 export function DataTable<TData, TValue>({
